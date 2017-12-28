@@ -1,15 +1,18 @@
 #!/usr/bin/python
 
-print "Hockeybox 2016"
-print "by Greg Manley"
-
 # HockeyBox
-# Originally by Greg Manley
-# Version 201712 by Don Seiler, don@seiler.us
+# by Don Seiler, don@seiler.us
+# Based on HockeyBox3.py by Greg Manley
+
+HOCKEYBOX_VERSION = "201712.1"
 
 import RPi.GPIO as GPIO
 from time import sleep
 import os, random, vlc
+
+print "HockeyBox %s" % HOCKEYBOX_VERSION
+print "by Don Seiler, don@seiler.us"
+print "Based on HockeyBox3.py (2016) by Greg Manley"
 
 BASE_MP3_DIR = "/media/pi/HOCKEYBOX"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
@@ -22,7 +25,8 @@ USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
 CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
 # XXX Why sleep here? And for 7 seconds?
-sleep(7.0)
+#print "Sleeping for 7 seconds for some reason"
+#sleep(7.0)
 
 # Set GPIO to BCM mode
 GPIO.setmode (GPIO.BCM)
@@ -71,13 +75,30 @@ OUTPUT_STOP=13
 outputs.append(OUTPUT_STOP)
 GPIO.setup(outputs, GPIO.OUT)
 
+# Define our VLC object
+instance = vlc.Instance()
+player = instance.media_player_new()
+
+def play_random_song(mp3_dir):
+    # Loop here until file is .mp3 and not a dotfile
+    while True:
+        song = random.choice(os.listdir(mp3_dir))
+        if song.endswith(".mp3") and not song.startswith("."):
+            break
+
+    song_path = mp3_dir + "/" + song
+    print "Playing %s" % song_path
+    song_media = instance.media_new(song_path)
+    player.set_media(song_media)
+    player.play()
+
+
 # XXX Why?        
+print "Sleeping for 1 second for some reason"
 sleep(1.0)
 
-# Does this light 'em up?
 # GPIO.HIGH turns the button lights off
 # GPIO.LOW turns the button lights on
-print "Lighting up buttons?"
 GPIO.output(OUTPUT_WARMUP, GPIO.HIGH)
 sleep(0.1)
 GPIO.output(OUTPUT_BTW, GPIO.HIGH)
@@ -117,7 +138,7 @@ sleep(0.1)
 GPIO.output(OUTPUT_STOP, GPIO.HIGH)
 
 
-print "Hockeybox ready!"
+print "HockeyBox ready, waiting for input."
 # Begin main loop, polling for input
 while True:
     # GOAL
@@ -128,14 +149,12 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_GOAL, GPIO.LOW)
 
-        song = random.choice(os.listdir(GOAL_MP3_DIR))
-        print "Playing %s" % song
-        
+        # DTS:
         # XXX Can we put this outside the loop? Special case if INPUT_STOP
-        # Right now it waits here in this block until the the stop riser, then the INPUT_STOP is handled at the end
+        # Right now it waits here in this block until the the stop riser, 
+	    # then the INPUT_STOP is handled at the end
         # Can we try using event_detected() instead of wait_for_edge()?
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(GOAL_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # WARM UP
@@ -146,10 +165,7 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_WARMUP, GPIO.LOW)
 
-        song = random.choice(os.listdir(WARMUP_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(WARMUP_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # US Anthem
@@ -160,10 +176,7 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_USANTHEM, GPIO.LOW)
 
-        song = random.choice(os.listdir(USANTHEM_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(USANTHEM_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
         
     # Canadian Anthem
@@ -174,10 +187,7 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_CDNANTHEM, GPIO.LOW)
 
-        song = random.choice(os.listdir(CDNANTHEM_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(CDNANTHEM_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Penalty
@@ -188,9 +198,7 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_PENALTY, GPIO.LOW)
 
-        song = random.choice(os.listdir(PENALTY_MP3_DIR))
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(PENALTY_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Power Play
@@ -201,10 +209,7 @@ while True:
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_POWERPLAY, GPIO.LOW)
 
-        song = random.choice(os.listdir(POWERPLAY_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(POWERPLAY_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Intermission
@@ -214,12 +219,8 @@ while True:
         sleep(0.2)
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_INTERMISSION, GPIO.LOW)
-        inter = (inter + 1)
 
-        song = random.choice(os.listdir(INTERMISSION_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(INTERMISSION_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # BTW (Between the Whistle)
@@ -233,17 +234,14 @@ while True:
         # XXX Why sleep 1s here?
         sleep(1.0)
 
-        song = random.choice(os.listdir(BTW_MP3_DIR))
-        print "Playing %s" % song
-        p = vlc.MediaPlayer(song)
-        p.play()
+        play_random_song(BTW_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # STOP
     if GPIO.input(INPUT_STOP):
         print "STOP"
         sleep(0.3)
-        p.stop()
+        player.stop()
         GPIO.output(outputs, GPIO.HIGH)
         print "Music Stopped"
         GPIO.output(OUTPUT_WARMUP, GPIO.LOW)
