@@ -3,6 +3,8 @@
 # HockeyBox
 # by Don Seiler, don@seiler.us
 # Based on HockeyBox3.py by Greg Manley
+#
+# Use 4-space tabs for indentation.
 
 HOCKEYBOX_VERSION = "201712.1"
 
@@ -79,6 +81,8 @@ GPIO.setup(outputs, GPIO.OUT)
 instance = vlc.Instance()
 player = instance.media_player_new()
 
+# Method for picking random MP3 from specified directory and playing it
+# with the VLC player instance.
 def play_random_song(mp3_dir):
     # Loop here until file is .mp3 and not a dotfile
     while True:
@@ -97,46 +101,16 @@ def play_random_song(mp3_dir):
 print "Sleeping for 1 second for some reason"
 sleep(1.0)
 
-# GPIO.HIGH turns the button lights off
-# GPIO.LOW turns the button lights on
-GPIO.output(OUTPUT_WARMUP, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_BTW, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_INTERMISSION, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_GOAL, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_PENALTY, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_POWERPLAY, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_USANTHEM, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_CDNANTHEM, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_STOP, GPIO.LOW)
-sleep(0.1)
+# Flicker the lights
+for output in outputs:
+    # GPIO.HIGH turns the button lights off
+    GPIO.output(output, GPIO.HIGH)
+    sleep(0.1)
+for output in outputs:
+    # GPIO.LOW turns the button lights on
+    GPIO.output(output, GPIO.LOW)
+    sleep(0.1)
 GPIO.output(OUTPUT_STOP, GPIO.HIGH)
-sleep(0.1)
-GPIO.output(OUTPUT_WARMUP, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_BTW, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_INTERMISSION, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_GOAL, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_PENALTY, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_POWERPLAY, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_USANTHEM, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_CDNANTHEM, GPIO.LOW)
-sleep(0.1)
-GPIO.output(OUTPUT_STOP, GPIO.HIGH)
-
 
 print "HockeyBox ready, waiting for input."
 # Begin main loop, polling for input
@@ -244,20 +218,8 @@ while True:
         player.stop()
         GPIO.output(outputs, GPIO.HIGH)
         print "Music Stopped"
-        GPIO.output(OUTPUT_WARMUP, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_BTW, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_INTERMISSION, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_GOAL, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_CDNANTHEM, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_USANTHEM, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_POWERPLAY, GPIO.LOW)
-        sleep(0.05)
-        GPIO.output(OUTPUT_PENALTY, GPIO.LOW)
-        sleep(0.05)
+        for output in outputs:
+            # GPIO.LOW turns the button lights on
+            GPIO.output(output, GPIO.LOW)
+            sleep(0.05)
         GPIO.output(OUTPUT_STOP, GPIO.HIGH)
