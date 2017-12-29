@@ -12,6 +12,8 @@ Alternative command script for The HockeyBox
 
 ## HockeyBox/RPi Changes
 * Edit /etc/rc.local to point to new hockeybox.py
+* Disabled GUI mode since we don't need it.
+* Edited /etc/fstab to mount SETTINGS and HOCKEYBOX since desktop won't automount anymore with GUI disabled.
 
 ## HOCKEYBOX USB Drive
 * Replaced all MP3 files with legally purchased MP3s.
@@ -26,7 +28,6 @@ Alternative command script for The HockeyBox
     * cdnanthem
 
 # TODO
-## Disable GUI
-* We can disable GUI via raspi-config
-    * However when we do that, the SETTINGS and HOCKEYBOX volumes are not mounted.
-    * Need to see if audio works as well.
+## Handle Input
+* Currently spins in loop polling for input changes, consumes entire CPU
+    * Can we sit idle and be notified for change instead?
