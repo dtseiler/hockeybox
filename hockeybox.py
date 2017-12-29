@@ -26,10 +26,6 @@ POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
 CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
-# XXX Why sleep here? And for 7 seconds?
-#print "Sleeping for 7 seconds for some reason"
-#sleep(7.0)
-
 # Set GPIO to BCM mode
 GPIO.setmode (GPIO.BCM)
 inputs = []
@@ -204,9 +200,6 @@ while True:
         sleep(0.2)
         GPIO.output(OUTPUT_STOP, GPIO.LOW)
         GPIO.output(OUTPUT_BTW, GPIO.LOW)
-
-        # XXX Why sleep 1s here?
-        sleep(1.0)
 
         play_random_song(BTW_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
