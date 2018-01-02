@@ -6,15 +6,20 @@
 #
 # Use 4-space tabs for indentation.
 
-HOCKEYBOX_VERSION = "201712.1"
+HOCKEYBOX_VERSION = "201801.1"
 
 import RPi.GPIO as GPIO
 from time import sleep
 import os, random, vlc
 
+print "--------------------------------------------"
 print "HockeyBox %s" % HOCKEYBOX_VERSION
 print "by Don Seiler, don@seiler.us"
 print "Based on HockeyBox3.py (2016) by Greg Manley"
+print "--------------------------------------------"
+print "RPI %s" % GPIO.RPIO_INFO
+print "RPi.GPIO %s" % GPIO.VERSION
+print "--------------------------------------------"
 
 BASE_MP3_DIR = "/media/pi/HOCKEYBOX"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
@@ -77,8 +82,9 @@ GPIO.setup(outputs, GPIO.OUT)
 instance = vlc.Instance()
 player = instance.media_player_new()
 
-
+#
 # Handle button light changes after a button is pushed
+#
 def change_lights_after_input(p_output):
     # Turn all button lights off
     GPIO.output(outputs, GPIO.HIGH)
@@ -88,9 +94,10 @@ def change_lights_after_input(p_output):
     GPIO.output(OUTPUT_STOP, GPIO.LOW)
     GPIO.output(p_output, GPIO.LOW)
 
-
-# Method for picking random MP3 from specified directory and playing it
-# with the VLC player instance.
+#
+# Picking random MP3 from specified directory and play it
+#   with the VLC player instance.
+#
 def play_random_song(mp3_dir):
     # Loop here until file is .mp3 and not a dotfile
     while True:
@@ -104,10 +111,95 @@ def play_random_song(mp3_dir):
     player.set_media(song_media)
     player.play()
 
+#
+# GOAL
+#
+def play_goal:
+    print "GOAL"
+    change_lights_after_input(OUTPUT_GOAL)
+    play_random_song(GOAL_MP3_DIR)
 
-# XXX Why?        
-print "Sleeping for 1 second for some reason"
-sleep(1.0)
+#
+# WARM-UP
+#
+def play_warmup:
+    print "WARMUP"
+    change_lights_after_input(OUTPUT_WARMUP)
+    play_random_song(WARMUP_MP3_DIR)
+
+#
+# US ANTHEM
+#
+def play_usanthem:
+    print "USANTHEM"
+    change_lights_after_input(OUTPUT_USANTHEM)
+    play_random_song(USANTHEM_MP3_DIR)
+
+#
+# CDN ANTHEM
+#
+def play_cdnanthem:
+    print "CDNANTHEM"
+    change_lights_after_input(OUTPUT_CDNANTHEM)
+    play_random_song(CDNANTHEM_MP3_DIR)
+
+#
+# PENALTY
+#
+def play_penalty:
+    print "PENALTY"
+    change_lights_after_input(OUTPUT_PENALTY)
+    play_random_song(PENALTY_MP3_DIR)
+
+#
+# POWERPLAY
+#
+def play_penalty:
+    print "POWERPLAY"
+    change_lights_after_input(OUTPUT_POWERPLAY)
+    play_random_song(POWERPLAY_MP3_DIR)
+
+#
+# INTERMISSION
+#
+def play_intermission:
+    print "INTERMISSION"
+    change_lights_after_input(OUTPUT_INTERMISSION)
+    play_random_song(INTERMISSION_MP3_DIR)
+
+#
+# BTW
+#
+def play_btw:
+    print "BTW"
+    change_lights_after_input(OUTPUT_BTW)
+    play_random_song(BTW_MP3_DIR)
+
+#
+# STOP
+#
+def stop_playback:
+    print "STOP"
+    sleep(0.3)
+    player.stop()
+    GPIO.output(outputs, GPIO.HIGH)
+    print "Music Stopped"
+    for output in outputs:
+        # GPIO.LOW turns the button lights on
+        GPIO.output(output, GPIO.LOW)
+        sleep(0.05)
+    GPIO.output(OUTPUT_STOP, GPIO.HIGH)
+
+# Define event detections and their callbacks
+GPIO.add_event_detect(INPUT_GOAL, GPIO.RISING, callback=play_goal, bouncetime=1000)
+GPIO.add_event_detect(INPUT_WARMUP, GPIO.RISING, callback=play_warmup, bouncetime=1000)
+GPIO.add_event_detect(INPUT_USANTHEM, GPIO.RISING, callback=play_usanthem, bouncetime=1000)
+GPIO.add_event_detect(INPUT_CDNANTHEM, GPIO.RISING, callback=play_cdnanthem, bouncetime=1000)
+GPIO.add_event_detect(INPUT_PENALTY, GPIO.RISING, callback=play_penalty, bouncetime=1000)
+GPIO.add_event_detect(INPUT_POWERPLAY, GPIO.RISING, callback=play_powerplay, bouncetime=1000)
+GPIO.add_event_detect(INPUT_INTERMISSION, GPIO.RISING, callback=play_intermission, bouncetime=1000)
+GPIO.add_event_detect(INPUT_BTW, GPIO.RISING, callback=play_btw, bouncetime=1000)
+GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetime=1000)
 
 # Flicker the lights
 for output in outputs:
@@ -123,80 +215,9 @@ GPIO.output(OUTPUT_STOP, GPIO.HIGH)
 print "HockeyBox ready, waiting for input."
 # Begin main loop, polling for input
 while True:
-    # GOAL
-    if GPIO.input(INPUT_GOAL):
-        print "GOAL"
-        change_lights_after_input(OUTPUT_GOAL)
-
-        # DTS:
-        # XXX Can we put this outside the loop? Special case if INPUT_STOP
-        # Right now it waits here in this block until the the stop riser, 
-	    # then the INPUT_STOP is handled at the end
-        # Can we try using event_detected() instead of wait_for_edge()?
-        play_random_song(GOAL_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # WARM UP
-    if GPIO.input(INPUT_WARMUP):
-        print "WARMUP"
-        change_lights_after_input(OUTPUT_WARMUP)
-        play_random_song(WARMUP_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # US Anthem
-    if GPIO.input(INPUT_USANTHEM):
-        print "US ANTHEM"
-        change_lights_after_input(OUTPUT_USANTHEM)
-        play_random_song(USANTHEM_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-        
-    # Canadian Anthem
-    if GPIO.input(INPUT_CDNANTHEM):
-        print "CDN ANTHEM"
-        change_lights_after_input(OUTPUT_CDNANTHEM)
-        play_random_song(CDNANTHEM_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # Penalty
-    if GPIO.input(INPUT_PENALTY):
-        print "PENALTY"
-        change_lights_after_input(OUTPUT_PENALTY)
-        play_random_song(PENALTY_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # Power Play
-    if GPIO.input(INPUT_POWERPLAY):
-        print "POWERPLAY"
-        change_lights_after_input(OUTPUT_POWERPLAY)
-        play_random_song(POWERPLAY_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # Intermission
-    if GPIO.input(INPUT_INTERMISSION):
-        print "INTERMISSION"
-        change_lights_after_input(OUTPUT_INTERMISSION)
-        play_random_song(INTERMISSION_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # BTW (Between the Whistle)
-    if GPIO.input(INPUT_BTW):
-        print "BTW"
-        change_lights_after_input(OUTPUT_BTW)
-        play_random_song(BTW_MP3_DIR)
-        GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
-
-    # STOP
-    if GPIO.input(INPUT_STOP):
-        print "STOP"
-        sleep(0.3)
-        player.stop()
-        GPIO.output(outputs, GPIO.HIGH)
-        print "Music Stopped"
-        for output in outputs:
-            # GPIO.LOW turns the button lights on
-            GPIO.output(output, GPIO.LOW)
-            sleep(0.05)
-        GPIO.output(OUTPUT_STOP, GPIO.HIGH)
+    # Event detection should be running during this loop
+    sleep(0.02)
+    # Wonder if we should put a wait_for_edge on INPUT_STOP in here?
 
 # This will likely never be called, but good practice
 GPIO.cleanup()
