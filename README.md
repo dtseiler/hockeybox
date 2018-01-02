@@ -31,4 +31,5 @@ Alternative command script for The HockeyBox
 ## Handle Input
 * Currently spins in loop polling for input changes, consumes entire CPU
     * Can we sit idle and be notified for change instead?
+    * `event_detected()` or threaded callbacks?
 * Display will show "PulseAudio server connection failure: Connection refused" when the VLC instance is created and when songs are played. It doesn't seem to affect the actual sound as that works fine, but I'd rather not have unexplained errors. Need to find out what is causing this and fix it.
