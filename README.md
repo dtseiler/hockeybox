@@ -35,3 +35,4 @@ Alternative command script for The HockeyBox
 * Display will show "PulseAudio server connection failure: Connection refused" when the VLC instance is created and when songs are played. It doesn't seem to affect the actual sound as that works fine, but I'd rather not have unexplained errors. Need to find out what is causing this and fix it.
 * INTERMISSION: keep playing random songs until STOP is pressed
 * INTERMISSION & BTW: Track songs played in a list so there are no repeats
+* Why is GPIO.HIGH setting lights off, and LOW setting them on? Sounds like it should be reverse. Is this a pull up/down thing?
