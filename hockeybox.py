@@ -197,3 +197,6 @@ while True:
             GPIO.output(output, GPIO.LOW)
             sleep(0.05)
         GPIO.output(OUTPUT_STOP, GPIO.HIGH)
+
+# This will likely never be called, but good practice
+GPIO.cleanup()
