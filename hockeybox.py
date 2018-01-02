@@ -77,6 +77,18 @@ GPIO.setup(outputs, GPIO.OUT)
 instance = vlc.Instance()
 player = instance.media_player_new()
 
+
+# Handle button light changes after a button is pushed
+def change_lights_after_input(p_output):
+    # Turn all button lights off
+    GPIO.output(outputs, GPIO.HIGH)
+    sleep(0.2)
+
+    # Turn on the STOP light and button that was pressed
+    GPIO.output(OUTPUT_STOP, GPIO.LOW)
+    GPIO.output(p_output, GPIO.LOW)
+
+
 # Method for picking random MP3 from specified directory and playing it
 # with the VLC player instance.
 def play_random_song(mp3_dir):
@@ -114,10 +126,7 @@ while True:
     # GOAL
     if GPIO.input(INPUT_GOAL):
         print "GOAL"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_GOAL, GPIO.LOW)
+        change_lights_after_input(OUTPUT_GOAL)
 
         # DTS:
         # XXX Can we put this outside the loop? Special case if INPUT_STOP
@@ -130,77 +139,49 @@ while True:
     # WARM UP
     if GPIO.input(INPUT_WARMUP):
         print "WARMUP"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_WARMUP, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_WARMUP)
         play_random_song(WARMUP_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # US Anthem
     if GPIO.input(INPUT_USANTHEM):
         print "US ANTHEM"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_USANTHEM, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_USANTHEM)
         play_random_song(USANTHEM_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
         
     # Canadian Anthem
     if GPIO.input(INPUT_CDNANTHEM):
         print "CDN ANTHEM"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_CDNANTHEM, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_CDNANTHEM)
         play_random_song(CDNANTHEM_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Penalty
     if GPIO.input(INPUT_PENALTY):
         print "PENALTY"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_PENALTY, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_PENALTY)
         play_random_song(PENALTY_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Power Play
     if GPIO.input(INPUT_POWERPLAY):
         print "POWERPLAY"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_POWERPLAY, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_POWERPLAY)
         play_random_song(POWERPLAY_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # Intermission
     if GPIO.input(INPUT_INTERMISSION):
         print "INTERMISSION"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_INTERMISSION, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_INTERMISSION)
         play_random_song(INTERMISSION_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
     # BTW (Between the Whistle)
     if GPIO.input(INPUT_BTW):
         print "BTW"
-        GPIO.output(outputs, GPIO.HIGH)
-        sleep(0.2)
-        GPIO.output(OUTPUT_STOP, GPIO.LOW)
-        GPIO.output(OUTPUT_BTW, GPIO.LOW)
-
+        change_lights_after_input(OUTPUT_BTW)
         play_random_song(BTW_MP3_DIR)
         GPIO.wait_for_edge(INPUT_STOP, GPIO.RISING)
 
