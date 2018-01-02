@@ -31,6 +31,11 @@ POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
 CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
+
+#
+# GPIO Setup
+#
+
 # Set GPIO to BCM mode
 GPIO.setmode (GPIO.BCM)
 inputs = []
@@ -78,11 +83,22 @@ OUTPUT_STOP=13
 outputs.append(OUTPUT_STOP)
 GPIO.setup(outputs, GPIO.OUT)
 
+
+#
+# VLC Player Setup
+#
+
 # Define our VLC object
 instance = vlc.Instance()
 player = instance.media_player_new()
 
+
 #
+# Function Definitions
+#
+
+#
+# change_lights_after_input
 # Handle button light changes after a button is pushed
 #
 def change_lights_after_input(p_output):
@@ -95,17 +111,20 @@ def change_lights_after_input(p_output):
     GPIO.output(p_output, GPIO.LOW)
 
 #
+# play_random_song
 # Picking random MP3 from specified directory and play it
 #   with the VLC player instance.
 #
-def play_random_song(mp3_dir):
+def play_random_song(p_mp3_dir):
+    # XXX Should we call player.stop() here first?
+
     # Loop here until file is .mp3 and not a dotfile
     while True:
-        song = random.choice(os.listdir(mp3_dir))
+        song = random.choice(os.listdir(p_mp3_dir))
         if song.endswith(".mp3") and not song.startswith("."):
             break
 
-    song_path = mp3_dir + "/" + song
+    song_path = p_mp3_dir + "/" + song
     print "Playing %s" % song_path
     song_media = instance.media_new(song_path)
     player.set_media(song_media)
@@ -202,6 +221,7 @@ GPIO.add_event_detect(INPUT_BTW, GPIO.RISING, callback=play_btw, bouncetime=1000
 GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetime=1000)
 
 # Flicker the lights
+print "Light 'em up."
 for output in outputs:
     # GPIO.HIGH turns the button lights off
     GPIO.output(output, GPIO.HIGH)
@@ -212,7 +232,9 @@ for output in outputs:
     sleep(0.1)
 GPIO.output(OUTPUT_STOP, GPIO.HIGH)
 
+print "***********************************"
 print "HockeyBox ready, waiting for input."
+print "***********************************"
 # Begin main loop, polling for input
 while True:
     # Event detection should be running during this loop
