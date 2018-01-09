@@ -199,7 +199,6 @@ def play_intermission(channel):
         if new_song in intermission_played_songs:
             print "Song %s has already been played, skipping." % new_song
         else:
-            print "Playing song %s" % new_song
             intermission_played_songs.append(new_song)
             break;
 
@@ -221,7 +220,6 @@ def play_btw(channel):
         if new_song in btw_played_songs:
             print "Song %s has already been played, skipping." % new_song
         else:
-            print "Playing song %s" % new_song
             btw_played_songs.append(new_song)
             break;
 
