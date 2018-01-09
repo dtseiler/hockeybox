@@ -18,7 +18,7 @@ Based on HockeyBox3.py by Greg Manley
 
 ## CHANGELOG
 
-### 201801.1 (TBD)
+### 201801.1 (9 Jan 2018)
 #### hockeybox.py Changes
 * Script cleanup, encapsulated light-change logic in functions.
 * Using RPi.GPIO's event detection and callback API rather than constantly polling all the inputs.
