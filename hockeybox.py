@@ -173,7 +173,7 @@ def play_penalty():
 #
 # POWERPLAY
 #
-def play_penalty():
+def play_powerplay():
     print "POWERPLAY"
     change_lights_after_input(OUTPUT_POWERPLAY)
     play_random_song(POWERPLAY_MP3_DIR)
