@@ -118,8 +118,7 @@ def change_lights_after_input(p_output):
 
 #
 # pick_random_song
-# Picking random MP3 from specified directory and play it
-#   with the VLC player instance.
+# Picking random MP3 from specified directory
 #
 def pick_random_song(p_mp3_dir):
     # Loop here until file is .mp3 and not a dotfile
@@ -131,6 +130,10 @@ def pick_random_song(p_mp3_dir):
     song_path = p_mp3_dir + "/" + song
     return song_path
 
+#
+# play_song
+# Play specified song (mp3 file path) through VLC MediaPlayer instance
+#
 def play_song(p_song):
     # Stop playing if anything is currently playing
     if player.is_playing():
