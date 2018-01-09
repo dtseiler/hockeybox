@@ -17,7 +17,7 @@ print "HockeyBox %s" % HOCKEYBOX_VERSION
 print "by Don Seiler, don@seiler.us"
 print "Based on HockeyBox3.py (2016) by Greg Manley"
 print "--------------------------------------------"
-print "RPI %s" % GPIO.RPIO_INFO
+print "RPI %s" % GPIO.RPI_INFO
 print "RPi.GPIO %s" % GPIO.VERSION
 print "--------------------------------------------"
 
