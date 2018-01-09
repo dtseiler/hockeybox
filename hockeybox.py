@@ -37,6 +37,7 @@ btw_played_songs = deque([])
 BTW_REPEAT_THRESHOLD = 25
 intermission_played_songs = deque([])
 INTERMISSION_REPEAT_THRESHOLD = 3
+STOP_INTERMISSION = True
 
 #
 # GPIO Setup
@@ -197,13 +198,17 @@ def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
 
+    global STOP_INTERMISSION
+    STOP_INTERMISSION = False
+
     # Keep playing songs during intermission until STOP pressed
     while True:
+        if STOP_INTERMISSION:
+            # STOP was pushed, time to break out
+            break
+
         # If the player is idle, play another song
         if not player.is_playing():
-            if GPIO.input(OUTPUT_STOP):
-                # STOP was pushed, time to break out
-                break
 
             new_song = ""
             while True:
@@ -221,7 +226,7 @@ def play_intermission(channel):
             play_song(new_song)
 
         # Short sleep between songs, also gives script time to register states
-        sleep(0.5)
+        sleep(1)
 
 #
 # BTW
@@ -249,6 +254,8 @@ def play_btw(channel):
 #
 def stop_playback(channel):
     print "STOP"
+    global STOP_INTERMISSION
+    STOP_INTERMISSION = True
     sleep(0.3)
     player.stop()
     GPIO.output(outputs, GPIO.HIGH)
