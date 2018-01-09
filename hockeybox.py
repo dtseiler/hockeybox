@@ -133,7 +133,7 @@ def play_random_song(p_mp3_dir):
 #
 # GOAL
 #
-def play_goal:
+def play_goal():
     print "GOAL"
     change_lights_after_input(OUTPUT_GOAL)
     play_random_song(GOAL_MP3_DIR)
@@ -141,7 +141,7 @@ def play_goal:
 #
 # WARM-UP
 #
-def play_warmup:
+def play_warmup():
     print "WARMUP"
     change_lights_after_input(OUTPUT_WARMUP)
     play_random_song(WARMUP_MP3_DIR)
@@ -149,7 +149,7 @@ def play_warmup:
 #
 # US ANTHEM
 #
-def play_usanthem:
+def play_usanthem():
     print "USANTHEM"
     change_lights_after_input(OUTPUT_USANTHEM)
     play_random_song(USANTHEM_MP3_DIR)
@@ -157,7 +157,7 @@ def play_usanthem:
 #
 # CDN ANTHEM
 #
-def play_cdnanthem:
+def play_cdnanthem():
     print "CDNANTHEM"
     change_lights_after_input(OUTPUT_CDNANTHEM)
     play_random_song(CDNANTHEM_MP3_DIR)
@@ -165,7 +165,7 @@ def play_cdnanthem:
 #
 # PENALTY
 #
-def play_penalty:
+def play_penalty():
     print "PENALTY"
     change_lights_after_input(OUTPUT_PENALTY)
     play_random_song(PENALTY_MP3_DIR)
@@ -173,7 +173,7 @@ def play_penalty:
 #
 # POWERPLAY
 #
-def play_penalty:
+def play_penalty():
     print "POWERPLAY"
     change_lights_after_input(OUTPUT_POWERPLAY)
     play_random_song(POWERPLAY_MP3_DIR)
@@ -181,7 +181,7 @@ def play_penalty:
 #
 # INTERMISSION
 #
-def play_intermission:
+def play_intermission():
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
     play_random_song(INTERMISSION_MP3_DIR)
@@ -189,7 +189,7 @@ def play_intermission:
 #
 # BTW
 #
-def play_btw:
+def play_btw():
     print "BTW"
     change_lights_after_input(OUTPUT_BTW)
     play_random_song(BTW_MP3_DIR)
@@ -197,7 +197,7 @@ def play_btw:
 #
 # STOP
 #
-def stop_playback:
+def stop_playback():
     print "STOP"
     sleep(0.3)
     player.stop()
