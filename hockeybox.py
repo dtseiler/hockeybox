@@ -132,11 +132,11 @@ def pick_random_song(p_mp3_dir):
     return song_path
 
 def play_song(p_song):
-    # XXX Should we call player.stop() here first?
-    player.stop()
+    # Stop playing if anything is currently playing
+    if player.is_playing():
+        player.stop()
     print "Playing %s" % p_song
-    song_media = instance.media_new(p_song)
-    player.set_media(song_media)
+    player.set_media(instance.media_new(p_song))
     player.play()
 
 #
@@ -193,6 +193,7 @@ def play_powerplay(channel):
 def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
+
     new_song = ""
     while True:
         new_song = pick_random_song(INTERMISSION_MP3_DIR)
