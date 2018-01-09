@@ -34,7 +34,7 @@ CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
 # Track which songs have been played
 btw_played_songs = deque([])
-BTW_REPEAT_THRESHOLD = 10
+BTW_REPEAT_THRESHOLD = 25
 intermission_played_songs = deque([])
 INTERMISSION_REPEAT_THRESHOLD = 3
 
