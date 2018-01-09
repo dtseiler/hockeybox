@@ -11,6 +11,7 @@ HOCKEYBOX_VERSION = "201801.1"
 import RPi.GPIO as GPIO
 from time import sleep
 import os, random, vlc
+from collections import deque
 
 print "--------------------------------------------"
 print "HockeyBox %s" % HOCKEYBOX_VERSION
@@ -31,6 +32,11 @@ POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
 CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
+# Track which songs have been played
+btw_played_songs = deque([])
+BTW_REPEAT_THRESHOLD = 10
+intermission_played_songs = deque([])
+INTERMISSION_REPEAT_THRESHOLD = 3
 
 #
 # GPIO Setup
@@ -111,22 +117,25 @@ def change_lights_after_input(p_output):
     GPIO.output(p_output, GPIO.LOW)
 
 #
-# play_random_song
+# pick_random_song
 # Picking random MP3 from specified directory and play it
 #   with the VLC player instance.
 #
-def play_random_song(p_mp3_dir):
-    # XXX Should we call player.stop() here first?
-
+def pick_random_song(p_mp3_dir):
     # Loop here until file is .mp3 and not a dotfile
     while True:
         song = random.choice(os.listdir(p_mp3_dir))
         if song.endswith(".mp3") and not song.startswith("."):
-            break
 
+            break
     song_path = p_mp3_dir + "/" + song
-    print "Playing %s" % song_path
-    song_media = instance.media_new(song_path)
+    return song_path
+
+def play_song(p_song):
+    # XXX Should we call player.stop() here first?
+    player.stop()
+    print "Playing %s" % p_song
+    song_media = instance.media_new(p_song)
     player.set_media(song_media)
     player.play()
 
@@ -136,7 +145,7 @@ def play_random_song(p_mp3_dir):
 def play_goal(channel):
     print "GOAL"
     change_lights_after_input(OUTPUT_GOAL)
-    play_random_song(GOAL_MP3_DIR)
+    play_song(pick_random_song(GOAL_MP3_DIR))
 
 #
 # WARM-UP
@@ -144,7 +153,7 @@ def play_goal(channel):
 def play_warmup(channel):
     print "WARMUP"
     change_lights_after_input(OUTPUT_WARMUP)
-    play_random_song(WARMUP_MP3_DIR)
+    play_song(pick_random_song(WARMUP_MP3_DIR))
 
 #
 # US ANTHEM
@@ -152,7 +161,7 @@ def play_warmup(channel):
 def play_usanthem(channel):
     print "USANTHEM"
     change_lights_after_input(OUTPUT_USANTHEM)
-    play_random_song(USANTHEM_MP3_DIR)
+    play_song(pick_random_song(USANTHEM_MP3_DIR))
 
 #
 # CDN ANTHEM
@@ -160,7 +169,7 @@ def play_usanthem(channel):
 def play_cdnanthem(channel):
     print "CDNANTHEM"
     change_lights_after_input(OUTPUT_CDNANTHEM)
-    play_random_song(CDNANTHEM_MP3_DIR)
+    play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
 #
 # PENALTY
@@ -168,7 +177,7 @@ def play_cdnanthem(channel):
 def play_penalty(channel):
     print "PENALTY"
     change_lights_after_input(OUTPUT_PENALTY)
-    play_random_song(PENALTY_MP3_DIR)
+    play_song(pick_random_song(PENALTY_MP3_DIR))
 
 #
 # POWERPLAY
@@ -176,7 +185,7 @@ def play_penalty(channel):
 def play_powerplay(channel):
     print "POWERPLAY"
     change_lights_after_input(OUTPUT_POWERPLAY)
-    play_random_song(POWERPLAY_MP3_DIR)
+    play_song(pick_random_song(POWERPLAY_MP3_DIR))
 
 #
 # INTERMISSION
@@ -184,7 +193,21 @@ def play_powerplay(channel):
 def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
-    play_random_song(INTERMISSION_MP3_DIR)
+    new_song = ""
+    while True:
+        new_song = pick_random_song(INTERMISSION_MP3_DIR)
+        if new_song in intermission_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            print "Playing song %s" % new_song
+            intermission_played_songs.append(new_song)
+            break;
+
+    # Keep list at INTERMISSION_REPEAT_THRESHOLD
+    if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
+        print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
+        intermission_played_songs.popleft()
+    play_song(new_song)
 
 #
 # BTW
@@ -192,7 +215,21 @@ def play_intermission(channel):
 def play_btw(channel):
     print "BTW"
     change_lights_after_input(OUTPUT_BTW)
-    play_random_song(BTW_MP3_DIR)
+    new_song = ""
+    while True:
+        new_song = pick_random_song(BTW_MP3_DIR)
+        if new_song in btw_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            print "Playing song %s" % new_song
+            btw_played_songs.append(new_song)
+            break;
+
+    # Keep list at BTW_REPEAT_THRESHOLD
+    if len(btw_played_songs) > BTW_REPEAT_THRESHOLD:
+        print "Removing %s from btw_played_songs list" % btw_played_songs[0]
+        btw_played_songs.popleft()
+    play_song(new_song)
 
 #
 # STOP
