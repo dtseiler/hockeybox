@@ -197,20 +197,31 @@ def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
 
-    new_song = ""
+    # Keep playing songs during intermission until STOP pressed
     while True:
-        new_song = pick_random_song(INTERMISSION_MP3_DIR)
-        if new_song in intermission_played_songs:
-            print "Song %s has already been played, skipping." % new_song
-        else:
-            intermission_played_songs.append(new_song)
-            break;
+        # If the player is idle, play another song
+        if not player.is_playing():
+            if GPIO.input(OUTPUT_STOP):
+                # STOP was pushed, time to break out
+                break
 
-    # Keep list at INTERMISSION_REPEAT_THRESHOLD
-    if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
-        print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
-        intermission_played_songs.popleft()
-    play_song(new_song)
+            new_song = ""
+            while True:
+                new_song = pick_random_song(INTERMISSION_MP3_DIR)
+                if new_song in intermission_played_songs:
+                    print "Song %s has already been played, skipping." % new_song
+                else:
+                    intermission_played_songs.append(new_song)
+                    break;
+
+            # Keep list at INTERMISSION_REPEAT_THRESHOLD
+            if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
+                print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
+                intermission_played_songs.popleft()
+            play_song(new_song)
+
+        # Short sleep between songs, also gives script time to register states
+        sleep(0.5)
 
 #
 # BTW
