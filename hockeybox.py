@@ -37,7 +37,6 @@ btw_played_songs = deque([])
 BTW_REPEAT_THRESHOLD = 25
 intermission_played_songs = deque([])
 INTERMISSION_REPEAT_THRESHOLD = 3
-STOP_INTERMISSION = True
 
 #
 # GPIO Setup
@@ -126,8 +125,8 @@ def pick_random_song(p_mp3_dir):
     while True:
         song = random.choice(os.listdir(p_mp3_dir))
         if song.endswith(".mp3") and not song.startswith("."):
-
             break
+
     song_path = p_mp3_dir + "/" + song
     return song_path
 
@@ -197,36 +196,20 @@ def play_powerplay(channel):
 def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
-
-    global STOP_INTERMISSION
-    STOP_INTERMISSION = False
-
-    # Keep playing songs during intermission until STOP pressed
+    new_song = ""
     while True:
-        if STOP_INTERMISSION:
-            # STOP was pushed, time to break out
-            break
+        new_song = pick_random_song(INTERMISSION_MP3_DIR)
+        if new_song in intermission_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            intermission_played_songs.append(new_song)
+            break;
 
-        # If the player is idle, play another song
-        if not player.is_playing():
-
-            new_song = ""
-            while True:
-                new_song = pick_random_song(INTERMISSION_MP3_DIR)
-                if new_song in intermission_played_songs:
-                    print "Song %s has already been played, skipping." % new_song
-                else:
-                    intermission_played_songs.append(new_song)
-                    break;
-
-            # Keep list at INTERMISSION_REPEAT_THRESHOLD
-            if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
-                print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
-                intermission_played_songs.popleft()
-            play_song(new_song)
-
-        # Short sleep between songs, also gives script time to register states
-        sleep(1)
+    # Keep list at INTERMISSION_REPEAT_THRESHOLD
+    if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
+        print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
+        intermission_played_songs.popleft()
+    play_song(new_song)
 
 #
 # BTW
@@ -254,8 +237,6 @@ def play_btw(channel):
 #
 def stop_playback(channel):
     print "STOP"
-    global STOP_INTERMISSION
-    STOP_INTERMISSION = True
     sleep(0.3)
     player.stop()
     GPIO.output(outputs, GPIO.HIGH)
