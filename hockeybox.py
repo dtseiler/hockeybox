@@ -37,6 +37,12 @@ btw_played_songs = deque([])
 BTW_REPEAT_THRESHOLD = 25
 intermission_played_songs = deque([])
 INTERMISSION_REPEAT_THRESHOLD = 3
+goal_played_songs = deque([])
+GOAL_REPEAT_THRESHOLD = 4
+penalty_played_songs = deque([])
+PENALTY_REPEAT_THRESHOLD = 4
+powerplay_played_songs = deque([])
+POWERPLAY_REPEAT_THRESHOLD = 4
 
 #
 # GPIO Setup
@@ -148,7 +154,20 @@ def play_song(p_song):
 def play_goal(channel):
     print "GOAL"
     change_lights_after_input(OUTPUT_GOAL)
-    play_song(pick_random_song(GOAL_MP3_DIR))
+    new_song = ""
+    while True:
+        new_song = pick_random_song(GOAL_MP3_DIR)
+        if new_song in goal_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            goal_played_songs.append(new_song)
+            break;
+
+    # Keep list at GOAL_REPEAT_THRESHOLD
+    if len(goal_played_songs) > GOAL_REPEAT_THRESHOLD:
+        print "Removing %s from goal_played_songs list" % goal_played_songs[0]
+        goal_played_songs.popleft()
+    play_song(new_song)
 
 #
 # WARM-UP
@@ -180,7 +199,20 @@ def play_cdnanthem(channel):
 def play_penalty(channel):
     print "PENALTY"
     change_lights_after_input(OUTPUT_PENALTY)
-    play_song(pick_random_song(PENALTY_MP3_DIR))
+    new_song = ""
+    while True:
+        new_song = pick_random_song(PENALTY_MP3_DIR)
+        if new_song in penalty_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            penalty_played_songs.append(new_song)
+            break;
+
+    # Keep list at PENALTY_REPEAT_THRESHOLD
+    if len(penalty_played_songs) > PENALTY_REPEAT_THRESHOLD:
+        print "Removing %s from penalty_played_songs list" % penalty_played_songs[0]
+        penalty_played_songs.popleft()
+    play_song(new_song)
 
 #
 # POWERPLAY
@@ -188,7 +220,20 @@ def play_penalty(channel):
 def play_powerplay(channel):
     print "POWERPLAY"
     change_lights_after_input(OUTPUT_POWERPLAY)
-    play_song(pick_random_song(POWERPLAY_MP3_DIR))
+    new_song = ""
+    while True:
+        new_song = pick_random_song(POWERPLAY_MP3_DIR)
+        if new_song in powerplay_played_songs:
+            print "Song %s has already been played, skipping." % new_song
+        else:
+            powerplay_played_songs.append(new_song)
+            break;
+
+    # Keep list at POWERPLAY_REPEAT_THRESHOLD
+    if len(powerplay_played_songs) > POWERPLAY_REPEAT_THRESHOLD:
+        print "Removing %s from powerplay_played_songs list" % powerplay_played_songs[0]
+        powerplay_played_songs.popleft()
+    play_song(new_song)
 
 #
 # INTERMISSION
