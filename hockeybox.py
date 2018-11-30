@@ -6,7 +6,7 @@
 #
 # Use 4-space tabs for indentation.
 
-HOCKEYBOX_VERSION = "201801.1"
+HOCKEYBOX_VERSION = "201811.1"
 
 import RPi.GPIO as GPIO
 from time import sleep
@@ -35,8 +35,9 @@ CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 # Track which songs have been played
 btw_played_songs = deque([])
 BTW_REPEAT_THRESHOLD = 25
+intermission_num_played = 0
 intermission_played_songs = deque([])
-INTERMISSION_REPEAT_THRESHOLD = 3
+INTERMISSION_REPEAT_THRESHOLD = 5
 goal_played_songs = deque([])
 GOAL_REPEAT_THRESHOLD = 4
 penalty_played_songs = deque([])
@@ -103,6 +104,16 @@ GPIO.setup(outputs, GPIO.OUT)
 # Define our VLC object
 instance = vlc.Instance()
 player = instance.media_player_new()
+list_player = instance.media_list_player_new()
+list_events = list_player.event_manager()
+
+def intermission_item_played(event):
+    global intermission_num_played
+    intermission_num_played += 1
+    print "Items Played: %d" % intermission_num_played
+    #sleep(1)
+
+list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
 
 
 #
@@ -241,20 +252,41 @@ def play_powerplay(channel):
 def play_intermission(channel):
     print "INTERMISSION"
     change_lights_after_input(OUTPUT_INTERMISSION)
+
+    # If we queue N songs but only play P, we should remove the last N-P songs from the played list 
+    global intermission_num_played
+    if intermission_num_played > 0:
+        reclaim_count = INTERMISSION_REPEAT_THRESHOLD - intermission_num_played
+        print "Taking back %d songs from the already-played list." % reclaim_count
+        for i in range(reclaim_count):
+            print "Reclaiming %s from intermission_played_songs list" % intermission_played_songs[-1]
+            intermission_played_songs.pop()
+
+    # Now remove any others over the threshold
+    while len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
+        print "Removing %s from intermission_played_songs list" % intermission_played_songs[-1]
+        intermission_played_songs.pop()
+
+    # Build Song List
+    intermission_num_played = 0
+    intermission_playlist = instance.media_list_new()
+
     new_song = ""
     while True:
         new_song = pick_random_song(INTERMISSION_MP3_DIR)
         if new_song in intermission_played_songs:
-            print "Song %s has already been played, skipping." % new_song
+            print "Song %s has already been added to the playlist, skipping." % new_song
         else:
+            print "Adding song %s to intermission play list." % new_song
             intermission_played_songs.append(new_song)
+            intermission_playlist.add_media(instance.media_new(new_song))
+
+        if intermission_playlist.count() >= INTERMISSION_REPEAT_THRESHOLD:
             break;
 
-    # Keep list at INTERMISSION_REPEAT_THRESHOLD
-    if len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
-        print "Removing %s from intermission_played_songs list" % intermission_played_songs[0]
-        intermission_played_songs.popleft()
-    play_song(new_song)
+    list_player.set_media_list(intermission_playlist)
+    list_player.play()
+
 
 #
 # BTW
@@ -283,7 +315,12 @@ def play_btw(channel):
 def stop_playback(channel):
     print "STOP"
     sleep(0.3)
-    player.stop()
+    if player.is_playing():
+        print "Stopping player"
+        player.stop()
+    if list_player.is_playing():
+        print "Stopping list player"
+        list_player.stop()
     GPIO.output(outputs, GPIO.HIGH)
     print "Music Stopped"
     for output in outputs:

@@ -12,11 +12,14 @@ Based on HockeyBox3.py by Greg Manley
 ## TODO
 * Display will show "PulseAudio server connection failure: Connection refused" when the VLC instance is created and when songs are played. It doesn't seem to affect the actual sound as that works fine, but I'd rather not have unexplained errors. Need to find out what is causing this and fix it.
 * Why is GPIO.HIGH setting lights off, and LOW setting them on? Sounds like it should be reverse. Is this a pull up/down thing?
-* INTERMISSION: keep playing random songs until STOP is pressed
-* GOAL: Play GH.mp3 separately, then play song from goal dir
 
 
 ## CHANGELOG
+
+### 201811.1 (29 Nov 2018)
+#### hockeybox.py Changes
+* Added playlist feature for INTERMISSION. Hitting INTERMISSION will generate a random playlist of INTERMISSION songs, same size as the `INTERMISSION_REPEAT_THRESHOLD` (default 5). This allows the operator to leave the Hockeybox unattended for longer intermissions and hit the restroom or concession stand.
+* Adding no-repeat thresholds for goals, powerplay and penalty music.
 
 ### 201801.1 (9 Jan 2018)
 #### hockeybox.py Changes
