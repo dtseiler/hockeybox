@@ -9,11 +9,6 @@ Based on HockeyBox3.py by Greg Manley
 * No other changes should be required to the HockeyBox itself.
 
 
-## TODO
-* Display will show "PulseAudio server connection failure: Connection refused" when the VLC instance is created and when songs are played. It doesn't seem to affect the actual sound as that works fine, but I'd rather not have unexplained errors. Need to find out what is causing this and fix it.
-* Why is GPIO.HIGH setting lights off, and LOW setting them on? Sounds like it should be reverse. Is this a pull up/down thing?
-
-
 ## CHANGELOG
 
 ### 201811.1 (29 Nov 2018)
