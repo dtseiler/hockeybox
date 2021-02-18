@@ -4,7 +4,8 @@
 # by Don Seiler, don@seiler.us
 # Based on HockeyBox3.py by Greg Manley
 #
-# Use 4-space tabs for indentation.
+# Use 4-space tabs for indentation
+# vim :set ts=4 sw=4 sts=4 et:
 
 HOCKEYBOX_VERSION = "201811.1"
 
