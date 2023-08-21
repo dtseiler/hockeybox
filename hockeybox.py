@@ -23,6 +23,14 @@ print("RPI %s" % GPIO.RPI_INFO)
 print("RPi.GPIO %s" % GPIO.VERSION)
 print("--------------------------------------------")
 
+# Set thresholds for songs played before a song can be re-played
+BTW_REPEAT_THRESHOLD = 25
+INTERMISSION_REPEAT_THRESHOLD = 5
+GOAL_REPEAT_THRESHOLD = 4
+PENALTY_REPEAT_THRESHOLD = 4
+POWERPLAY_REPEAT_THRESHOLD = 4
+
+# mp3 locations
 BASE_MP3_DIR = "/media/hockeybox"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
 WARMUP_MP3_DIR = BASE_MP3_DIR + "/warmup"
@@ -33,18 +41,13 @@ POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
 CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
-# Track which songs have been played
+# Queues to track played songs
 btw_played_songs = deque([])
-BTW_REPEAT_THRESHOLD = 25
 intermission_num_played = 0
 intermission_played_songs = deque([])
-INTERMISSION_REPEAT_THRESHOLD = 5
 goal_played_songs = deque([])
-GOAL_REPEAT_THRESHOLD = 4
 penalty_played_songs = deque([])
-PENALTY_REPEAT_THRESHOLD = 4
 powerplay_played_songs = deque([])
-POWERPLAY_REPEAT_THRESHOLD = 4
 
 #
 # GPIO Setup
