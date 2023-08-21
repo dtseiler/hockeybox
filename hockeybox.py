@@ -108,16 +108,9 @@ GPIO.setup(outputs, GPIO.OUT)
 # Define our VLC object
 instance = vlc.Instance()
 player = instance.media_player_new()
+player_events = player.event_manager()
 list_player = instance.media_list_player_new()
 list_events = list_player.event_manager()
-
-def intermission_item_played(event):
-    global intermission_num_played
-    intermission_num_played += 1
-    print("Items Played: %d" % intermission_num_played)
-    #sleep(1)
-
-list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
 
 
 #
@@ -343,6 +336,27 @@ GPIO.add_event_detect(INPUT_POWERPLAY, GPIO.RISING, callback=play_powerplay, bou
 GPIO.add_event_detect(INPUT_INTERMISSION, GPIO.RISING, callback=play_intermission, bouncetime=1000)
 GPIO.add_event_detect(INPUT_BTW, GPIO.RISING, callback=play_btw, bouncetime=1000)
 GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetime=1000)
+
+#
+# Event Handlers
+#
+
+# Sends the STOP signal when a song has finished playing to completion
+def song_finished(event):
+    print("Song finished, stopping playback")
+    stop_playback(INPUT_STOP)
+
+# Advances to the next song for intermission lists
+def intermission_item_played(event):
+    global intermission_num_played
+    intermission_num_played += 1
+    print("Items Played: %d" % intermission_num_played)
+    #sleep(1)
+
+player_events.event_attach(vlc.EventType.MediaPlayerEndReached, song_finished)
+list_events.event_attach(vlc.EventType.MediaListPlayerPlayed, song_finished)
+list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
+
 
 # Flicker the lights
 print("Light 'em up.")
