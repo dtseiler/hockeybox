@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # HockeyBox
 # by Don Seiler, don@seiler.us
@@ -7,23 +7,23 @@
 # Use 4-space tabs for indentation
 # vim :set ts=4 sw=4 sts=4 et:
 
-HOCKEYBOX_VERSION = "201811.1"
+HOCKEYBOX_VERSION = "202308.1"
 
 import RPi.GPIO as GPIO
 from time import sleep
 import os, random, vlc
 from collections import deque
 
-print "--------------------------------------------"
-print "HockeyBox %s" % HOCKEYBOX_VERSION
-print "by Don Seiler, don@seiler.us"
-print "Based on HockeyBox3.py (2016) by Greg Manley"
-print "--------------------------------------------"
-print "RPI %s" % GPIO.RPI_INFO
-print "RPi.GPIO %s" % GPIO.VERSION
-print "--------------------------------------------"
+print("--------------------------------------------")
+print("HockeyBox %s" % HOCKEYBOX_VERSION)
+print("by Don Seiler, don@seiler.us")
+print("Based on HockeyBox3.py (2016) by Greg Manley")
+print("--------------------------------------------")
+print("RPI %s" % GPIO.RPI_INFO)
+print("RPi.GPIO %s" % GPIO.VERSION)
+print("--------------------------------------------")
 
-BASE_MP3_DIR = "/media/pi/HOCKEYBOX"
+BASE_MP3_DIR = "/media/hockeybox"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
 WARMUP_MP3_DIR = BASE_MP3_DIR + "/warmup"
 BTW_MP3_DIR = BASE_MP3_DIR + "/btw"
@@ -111,7 +111,7 @@ list_events = list_player.event_manager()
 def intermission_item_played(event):
     global intermission_num_played
     intermission_num_played += 1
-    print "Items Played: %d" % intermission_num_played
+    print("Items Played: %d" % intermission_num_played)
     #sleep(1)
 
 list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
@@ -156,7 +156,7 @@ def play_song(p_song):
     # Stop playing if anything is currently playing
     if player.is_playing():
         player.stop()
-    print "Playing %s" % p_song
+    print("Playing %s" % p_song)
     player.set_media(instance.media_new(p_song))
     player.play()
 
@@ -164,20 +164,20 @@ def play_song(p_song):
 # GOAL
 #
 def play_goal(channel):
-    print "GOAL"
+    print("GOAL")
     change_lights_after_input(OUTPUT_GOAL)
     new_song = ""
     while True:
         new_song = pick_random_song(GOAL_MP3_DIR)
         if new_song in goal_played_songs:
-            print "Song %s has already been played, skipping." % new_song
+            print("Song %s has already been played, skipping." % new_song)
         else:
             goal_played_songs.append(new_song)
             break;
 
     # Keep list at GOAL_REPEAT_THRESHOLD
     if len(goal_played_songs) > GOAL_REPEAT_THRESHOLD:
-        print "Removing %s from goal_played_songs list" % goal_played_songs[0]
+        print("Removing %s from goal_played_songs list" % goal_played_songs[0])
         goal_played_songs.popleft()
     play_song(new_song)
 
@@ -185,7 +185,7 @@ def play_goal(channel):
 # WARM-UP
 #
 def play_warmup(channel):
-    print "WARMUP"
+    print("WARMUP")
     change_lights_after_input(OUTPUT_WARMUP)
     play_song(pick_random_song(WARMUP_MP3_DIR))
 
@@ -193,7 +193,7 @@ def play_warmup(channel):
 # US ANTHEM
 #
 def play_usanthem(channel):
-    print "USANTHEM"
+    print("USANTHEM")
     change_lights_after_input(OUTPUT_USANTHEM)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
 
@@ -201,7 +201,7 @@ def play_usanthem(channel):
 # CDN ANTHEM
 #
 def play_cdnanthem(channel):
-    print "CDNANTHEM"
+    print("CDNANTHEM")
     change_lights_after_input(OUTPUT_CDNANTHEM)
     play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
@@ -209,20 +209,20 @@ def play_cdnanthem(channel):
 # PENALTY
 #
 def play_penalty(channel):
-    print "PENALTY"
+    print("PENALTY")
     change_lights_after_input(OUTPUT_PENALTY)
     new_song = ""
     while True:
         new_song = pick_random_song(PENALTY_MP3_DIR)
         if new_song in penalty_played_songs:
-            print "Song %s has already been played, skipping." % new_song
+            print("Song %s has already been played, skipping." % new_song)
         else:
             penalty_played_songs.append(new_song)
             break;
 
     # Keep list at PENALTY_REPEAT_THRESHOLD
     if len(penalty_played_songs) > PENALTY_REPEAT_THRESHOLD:
-        print "Removing %s from penalty_played_songs list" % penalty_played_songs[0]
+        print("Removing %s from penalty_played_songs list" % penalty_played_songs[0])
         penalty_played_songs.popleft()
     play_song(new_song)
 
@@ -230,20 +230,20 @@ def play_penalty(channel):
 # POWERPLAY
 #
 def play_powerplay(channel):
-    print "POWERPLAY"
+    print("POWERPLAY")
     change_lights_after_input(OUTPUT_POWERPLAY)
     new_song = ""
     while True:
         new_song = pick_random_song(POWERPLAY_MP3_DIR)
         if new_song in powerplay_played_songs:
-            print "Song %s has already been played, skipping." % new_song
+            print("Song %s has already been played, skipping." % new_song)
         else:
             powerplay_played_songs.append(new_song)
             break;
 
     # Keep list at POWERPLAY_REPEAT_THRESHOLD
     if len(powerplay_played_songs) > POWERPLAY_REPEAT_THRESHOLD:
-        print "Removing %s from powerplay_played_songs list" % powerplay_played_songs[0]
+        print("Removing %s from powerplay_played_songs list" % powerplay_played_songs[0])
         powerplay_played_songs.popleft()
     play_song(new_song)
 
@@ -251,21 +251,21 @@ def play_powerplay(channel):
 # INTERMISSION
 #
 def play_intermission(channel):
-    print "INTERMISSION"
+    print("INTERMISSION")
     change_lights_after_input(OUTPUT_INTERMISSION)
 
     # If we queue N songs but only play P, we should remove the last N-P songs from the played list 
     global intermission_num_played
     if intermission_num_played > 0:
         reclaim_count = INTERMISSION_REPEAT_THRESHOLD - intermission_num_played
-        print "Taking back %d songs from the already-played list." % reclaim_count
+        print("Taking back %d songs from the already-played list." % reclaim_count)
         for i in range(reclaim_count):
-            print "Reclaiming %s from intermission_played_songs list" % intermission_played_songs[-1]
+            print("Reclaiming %s from intermission_played_songs list" % intermission_played_songs[-1])
             intermission_played_songs.pop()
 
     # Now remove any others over the threshold
     while len(intermission_played_songs) > INTERMISSION_REPEAT_THRESHOLD:
-        print "Removing %s from intermission_played_songs list" % intermission_played_songs[-1]
+        print("Removing %s from intermission_played_songs list" % intermission_played_songs[-1])
         intermission_played_songs.pop()
 
     # Build Song List
@@ -276,9 +276,9 @@ def play_intermission(channel):
     while True:
         new_song = pick_random_song(INTERMISSION_MP3_DIR)
         if new_song in intermission_played_songs:
-            print "Song %s has already been added to the playlist, skipping." % new_song
+            print("Song %s has already been added to the playlist, skipping." % new_song)
         else:
-            print "Adding song %s to intermission play list." % new_song
+            print("Adding song %s to intermission play list." % new_song)
             intermission_played_songs.append(new_song)
             intermission_playlist.add_media(instance.media_new(new_song))
 
@@ -293,20 +293,20 @@ def play_intermission(channel):
 # BTW
 #
 def play_btw(channel):
-    print "BTW"
+    print("BTW")
     change_lights_after_input(OUTPUT_BTW)
     new_song = ""
     while True:
         new_song = pick_random_song(BTW_MP3_DIR)
         if new_song in btw_played_songs:
-            print "Song %s has already been played, skipping." % new_song
+            print("Song %s has already been played, skipping." % new_song)
         else:
             btw_played_songs.append(new_song)
             break;
 
     # Keep list at BTW_REPEAT_THRESHOLD
     if len(btw_played_songs) > BTW_REPEAT_THRESHOLD:
-        print "Removing %s from btw_played_songs list" % btw_played_songs[0]
+        print("Removing %s from btw_played_songs list" % btw_played_songs[0])
         btw_played_songs.popleft()
     play_song(new_song)
 
@@ -314,16 +314,16 @@ def play_btw(channel):
 # STOP
 #
 def stop_playback(channel):
-    print "STOP"
+    print("STOP")
     sleep(0.3)
     if player.is_playing():
-        print "Stopping player"
+        print("Stopping player")
         player.stop()
     if list_player.is_playing():
-        print "Stopping list player"
+        print("Stopping list player")
         list_player.stop()
     GPIO.output(outputs, GPIO.HIGH)
-    print "Music Stopped"
+    print("Music Stopped")
     for output in outputs:
         # GPIO.LOW turns the button lights on
         GPIO.output(output, GPIO.LOW)
@@ -342,7 +342,7 @@ GPIO.add_event_detect(INPUT_BTW, GPIO.RISING, callback=play_btw, bouncetime=1000
 GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetime=1000)
 
 # Flicker the lights
-print "Light 'em up."
+print("Light 'em up.")
 for output in outputs:
     # GPIO.HIGH turns the button lights off
     GPIO.output(output, GPIO.HIGH)
@@ -353,9 +353,9 @@ for output in outputs:
     sleep(0.1)
 GPIO.output(OUTPUT_STOP, GPIO.HIGH)
 
-print "***********************************"
-print "HockeyBox ready, waiting for input."
-print "***********************************"
+print("***********************************")
+print("HockeyBox ready, waiting for input.")
+print("***********************************")
 # Begin main loop, polling for input
 while True:
     # Event detection should be running during this loop

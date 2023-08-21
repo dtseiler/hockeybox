@@ -6,6 +6,11 @@ Alternative command script for The HockeyBox
 
 ## CHANGELOG
 
+### 202308.1 (20 Aug 2023)
+#### hockeybox.py Changes
+* Updated for python3
+* Changed media directory location to `/media/hockeybox`
+
 ### 201811.1 (29 Nov 2018)
 #### hockeybox.py Changes
 * Added playlist feature for INTERMISSION. Hitting INTERMISSION will generate a random playlist of INTERMISSION songs, same size as the `INTERMISSION_REPEAT_THRESHOLD` (default 5). This allows the operator to leave the Hockeybox unattended for longer intermissions and hit the restroom or concession stand.
