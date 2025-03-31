@@ -123,14 +123,14 @@ def cycle_lights_and_on():
 # change_lights_after_input
 # Handle button light changes after a button is pushed
 #
-def change_lights_after_input(p_led_pin):
+def change_lights_after_input(p_led):
     # Turn all button lights off
     leds.off()
     sleep(0.2)
 
     # Turn on the STOP light and button that was pressed
     leds.stop.on()
-    leds[p_led_pin].on()
+    p_led.on()
 
 #
 # pick_random_song
@@ -163,7 +163,7 @@ def play_song(p_song):
 #
 def play_goal():
     print("GOAL")
-    change_lights_after_input(LED_GOAL_PIN)
+    change_lights_after_input(leds.goal)
     new_song = ""
     while True:
         new_song = pick_random_song(GOAL_MP3_DIR)
@@ -184,7 +184,7 @@ def play_goal():
 #
 def play_warmup():
     print("WARMUP")
-    change_lights_after_input(LED_WARMUP_PIN)
+    change_lights_after_input(leds.warmup)
     play_song(pick_random_song(WARMUP_MP3_DIR))
 
 #
@@ -192,7 +192,7 @@ def play_warmup():
 #
 def play_usanthem():
     print("USANTHEM")
-    change_lights_after_input(LED_USANTHEM_PIN)
+    change_lights_after_input(leds.usanthem)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
 
 #
@@ -200,7 +200,7 @@ def play_usanthem():
 #
 def play_cdnanthem():
     print("CDNANTHEM")
-    change_lights_after_input(LED_CDNANTHEM_PIN)
+    change_lights_after_input(leds.cdnanthem)
     play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
 #
@@ -208,7 +208,7 @@ def play_cdnanthem():
 #
 def play_penalty():
     print("PENALTY")
-    change_lights_after_input(LED_PENALTY_PIN)
+    change_lights_after_input(leds.penalty)
     new_song = ""
     while True:
         new_song = pick_random_song(PENALTY_MP3_DIR)
@@ -229,7 +229,7 @@ def play_penalty():
 #
 def play_powerplay():
     print("POWERPLAY")
-    change_lights_after_input(LED_POWERPLAY_PIN)
+    change_lights_after_input(leds.powerplay)
     new_song = ""
     while True:
         new_song = pick_random_song(POWERPLAY_MP3_DIR)
@@ -250,7 +250,7 @@ def play_powerplay():
 #
 def play_intermission():
     print("INTERMISSION")
-    change_lights_after_input(LED_INTERMISSION_PIN)
+    change_lights_after_input(leds.intermission)
 
     # If we queue N songs but only play P, we should remove the last N-P songs from the played list 
     global intermission_num_played
@@ -292,7 +292,7 @@ def play_intermission():
 #
 def play_btw():
     print("BTW")
-    change_lights_after_input(LED_BTW_PIN)
+    change_lights_after_input(leds.btw)
     new_song = ""
     while True:
         new_song = pick_random_song(BTW_MP3_DIR)
