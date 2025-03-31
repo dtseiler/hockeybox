@@ -66,7 +66,8 @@ buttons = ButtonBoard(
     powerplay = BUTTON_POWERPLAY_PIN,
     usanthem = BUTTON_USANTHEM_PIN,
     cdnanthem = BUTTON_CDNANTHEM_PIN,
-    stop = BUTTON_STOP_PIN
+    stop = BUTTON_STOP_PIN,
+    bounce_time = 0.05
 )
 
 # Setup LEDS
@@ -324,15 +325,15 @@ def stop_playback():
     cycle_lights_and_on
 
 # Define event detections and their callbacks
-buttons.goal.when_pressed=play_goal
-buttons.warmup.when_pressed=play_warmup
-buttons.usanthem.when_pressed=play_usanthem
-buttons.cndanthem.when_pressed=play_cdnanthem
-buttons.penalty.when_pressed=play_penalty
-buttons.powerplay.when_pressed=play_powerplay
-buttons.intermission.when_pressed=play_intermission
-buttons.btw.when_pressed=play_btw
-buttons.stop.when_pressed=stop_playback
+buttons.goal.when_pressed = play_goal
+buttons.warmup.when_pressed = play_warmup
+buttons.usanthem.when_pressed = play_usanthem
+buttons.cndanthem.when_pressed = play_cdnanthem
+buttons.penalty.when_pressed = play_penalty
+buttons.powerplay.when_pressed = play_powerplay
+buttons.intermission.when_pressed = play_intermission
+buttons.btw.when_pressed = play_btw
+buttons.stop.when_pressed = stop_playback
 
 #
 # Event Handlers
@@ -348,7 +349,6 @@ def intermission_item_played(event):
     global intermission_num_played
     intermission_num_played += 1
     print("Items Played: %d" % intermission_num_played)
-    #sleep(1)
 
 player_events.event_attach(vlc.EventType.MediaPlayerEndReached, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerPlayed, song_finished)
