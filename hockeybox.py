@@ -16,6 +16,8 @@ from signal import pause
 from collections import deque
 from pkg_resources import require
 
+pi = pi_info()
+
 print("--------------------------------------------")
 print("HockeyBox %s" % HOCKEYBOX_VERSION)
 print("by Don Seiler, don@seiler.us")
