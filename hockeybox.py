@@ -9,16 +9,20 @@
 
 HOCKEYBOX_VERSION = "202504.1"
 
-from gpiozero import ButtonBoard, LEDBoard
+from gpiozero import ButtonBoard, LEDBoard, pi_info
 from time import sleep
 import os, random, vlc
 from signal import pause
 from collections import deque
+from pkg_resources import require
 
 print("--------------------------------------------")
 print("HockeyBox %s" % HOCKEYBOX_VERSION)
 print("by Don Seiler, don@seiler.us")
 print("Based on HockeyBox3.py (2016) by Greg Manley")
+print("--------------------------------------------")
+print("Raspberry Pi Model " + pi.model)
+print("gpiozero " + require('gpiozero')[0].version)
 print("--------------------------------------------")
 
 # Set thresholds for songs played before a song can be re-played
