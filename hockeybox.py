@@ -24,7 +24,7 @@ print("RPi.GPIO %s" % GPIO.VERSION)
 print("--------------------------------------------")
 
 # Set thresholds for songs played before a song can be re-played
-BTW_REPEAT_THRESHOLD = 25
+BTW_REPEAT_THRESHOLD = 50
 INTERMISSION_REPEAT_THRESHOLD = 5
 GOAL_REPEAT_THRESHOLD = 4
 PENALTY_REPEAT_THRESHOLD = 4
