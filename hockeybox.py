@@ -95,7 +95,8 @@ leds = LEDBoard(
     powerplay = LED_POWERPLAY_PIN,
     usanthem = LED_USANTHEM_PIN,
     cdnanthem = LED_CDNANTHEM_PIN,
-    stop = LED_STOP_PIN
+    stop = LED_STOP_PIN,
+    _order=('warmup','btw','intermission','goal','penalty','powerplay','usanthem','cdnanthem','stop')
 )
 
 
@@ -125,6 +126,7 @@ def cycle_lights_and_on():
         led.on()
         sleep(0.05)
     leds.stop.off()
+
 
 #
 # change_lights_after_input
