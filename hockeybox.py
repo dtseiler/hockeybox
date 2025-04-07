@@ -334,7 +334,7 @@ def stop_playback():
 buttons.goal.when_pressed = play_goal
 buttons.warmup.when_pressed = play_warmup
 buttons.usanthem.when_pressed = play_usanthem
-buttons.cndanthem.when_pressed = play_cdnanthem
+buttons.cdnanthem.when_pressed = play_cdnanthem
 buttons.penalty.when_pressed = play_penalty
 buttons.powerplay.when_pressed = play_powerplay
 buttons.intermission.when_pressed = play_intermission
