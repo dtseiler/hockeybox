@@ -330,7 +330,7 @@ def stop_playback():
         print("Stopping list player")
         list_player.stop()
     print("Music Stopped")
-    cycle_lights_and_on
+    cycle_lights_and_on()
 
 # Define event detections and their callbacks
 buttons.goal.when_pressed = play_goal
