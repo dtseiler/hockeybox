@@ -117,6 +117,19 @@ list_events = list_player.event_manager()
 #
 
 #
+# stop_music_player
+#  Checks both players and stops both if necessary
+#
+def stop_music_player():
+    if player.is_playing():
+        print("Stopping player")
+        player.stop()
+    if list_player.is_playing():
+        print("Stopping list player")
+        list_player.stop()
+    print("Music Players Stopped")
+
+#
 # cycle_lights_and_on
 # Turns all lights off and then on in a flowing sequence
 #
@@ -161,8 +174,8 @@ def pick_random_song(p_mp3_dir):
 #
 def play_song(p_song):
     # Stop playing if anything is currently playing
-    if player.is_playing():
-        player.stop()
+    stop_music_player()
+
     print("Playing %s" % p_song)
     player.set_media(instance.media_new(p_song))
     player.play()
@@ -261,6 +274,9 @@ def play_intermission():
     print("INTERMISSION")
     change_lights_after_input(leds.intermission)
 
+    # Stop playing if anything is currently playing
+    stop_music_player()
+
     # If we queue N songs but only play P, we should remove the last N-P songs from the played list 
     global intermission_num_played
     if intermission_num_played > 0:
@@ -322,14 +338,10 @@ def play_btw():
 #
 def stop_playback():
     print("STOP")
-    sleep(0.3)
-    if player.is_playing():
-        print("Stopping player")
-        player.stop()
-    if list_player.is_playing():
-        print("Stopping list player")
-        list_player.stop()
-    print("Music Stopped")
+
+    # Stop playing if anything is currently playing
+    stop_music_player()
+
     cycle_lights_and_on()
 
 # Define event detections and their callbacks
