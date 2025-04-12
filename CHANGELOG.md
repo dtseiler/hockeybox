@@ -6,6 +6,11 @@ Alternative command script for The HockeyBox
 
 ## CHANGELOG
 
+### 202504.1 (XX Apr 2025)
+#### hockeybox.py Changes
+* Replaced RPi.GPIO with gpiozero library.
+* Fixed bug to prevent simultaneous playback of INTERMISSION and any non-INTERMISSION player.
+
 ### 202308.1 (20 Aug 2023)
 #### hockeybox.py Changes
 * Updated for python3
