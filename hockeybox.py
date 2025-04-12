@@ -9,6 +9,7 @@
 
 HOCKEYBOX_VERSION = "202504.1"
 
+from hockeybox_pins import *
 from gpiozero import ButtonBoard, LEDBoard, pi_info
 from time import sleep
 import os, random, vlc
@@ -54,15 +55,6 @@ penalty_played_songs = deque([])
 powerplay_played_songs = deque([])
 
 # Setup buttons
-BUTTON_WARMUP_PIN = 25
-BUTTON_BTW_PIN = 21
-BUTTON_INTERMISSION_PIN = 12
-BUTTON_GOAL_PIN = 20
-BUTTON_PENALTY_PIN = 23
-BUTTON_POWERPLAY_PIN = 16
-BUTTON_USANTHEM_PIN = 7
-BUTTON_CDNANTHEM_PIN = 8
-BUTTON_STOP_PIN = 24
 buttons = ButtonBoard(
     warmup = BUTTON_WARMUP_PIN,
     btw = BUTTON_BTW_PIN,
@@ -77,15 +69,6 @@ buttons = ButtonBoard(
 )
 
 # Setup LEDS
-LED_WARMUP_PIN = 27
-LED_BTW_PIN = 26
-LED_INTERMISSION_PIN = 22
-LED_GOAL_PIN = 17
-LED_PENALTY_PIN = 19
-LED_POWERPLAY_PIN = 6
-LED_USANTHEM_PIN = 5
-LED_CDNANTHEM_PIN = 4
-LED_STOP_PIN = 13
 leds = LEDBoard(
     warmup = LED_WARMUP_PIN,
     btw = LED_BTW_PIN,
