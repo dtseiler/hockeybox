@@ -7,20 +7,24 @@
 # Use 4-space tabs for indentation
 # vim :set ts=4 sw=4 sts=4 et:
 
-HOCKEYBOX_VERSION = "202308.1"
+HOCKEYBOX_VERSION = "202504.1"
 
-import RPi.GPIO as GPIO
+from gpiozero import ButtonBoard, LEDBoard, pi_info
 from time import sleep
 import os, random, vlc
+from signal import pause
 from collections import deque
+from pkg_resources import require
+
+pi = pi_info()
 
 print("--------------------------------------------")
 print("HockeyBox %s" % HOCKEYBOX_VERSION)
 print("by Don Seiler, don@seiler.us")
 print("Based on HockeyBox3.py (2016) by Greg Manley")
 print("--------------------------------------------")
-print("RPI %s" % GPIO.RPI_INFO)
-print("RPi.GPIO %s" % GPIO.VERSION)
+print("Raspberry Pi Model " + pi.model)
+print("gpiozero " + require('gpiozero')[0].version)
 print("--------------------------------------------")
 
 # Set thresholds for songs played before a song can be re-played
@@ -49,56 +53,51 @@ goal_played_songs = deque([])
 penalty_played_songs = deque([])
 powerplay_played_songs = deque([])
 
-#
-# GPIO Setup
-#
+# Setup buttons
+BUTTON_WARMUP_PIN = 25
+BUTTON_BTW_PIN = 21
+BUTTON_INTERMISSION_PIN = 12
+BUTTON_GOAL_PIN = 20
+BUTTON_PENALTY_PIN = 23
+BUTTON_POWERPLAY_PIN = 16
+BUTTON_USANTHEM_PIN = 7
+BUTTON_CDNANTHEM_PIN = 8
+BUTTON_STOP_PIN = 24
+buttons = ButtonBoard(
+    warmup = BUTTON_WARMUP_PIN,
+    btw = BUTTON_BTW_PIN,
+    intermission = BUTTON_INTERMISSION_PIN,
+    goal = BUTTON_GOAL_PIN,
+    penalty = BUTTON_PENALTY_PIN,
+    powerplay = BUTTON_POWERPLAY_PIN,
+    usanthem = BUTTON_USANTHEM_PIN,
+    cdnanthem = BUTTON_CDNANTHEM_PIN,
+    stop = BUTTON_STOP_PIN,
+    bounce_time = 0.05
+)
 
-# Set GPIO to BCM mode
-GPIO.setmode (GPIO.BCM)
-inputs = []
-outputs = []
-
-# Setup input channels
-INPUT_WARMUP=25
-inputs.append(INPUT_WARMUP)
-INPUT_BTW=21
-inputs.append(INPUT_BTW)
-INPUT_INTERMISSION=12
-inputs.append(INPUT_INTERMISSION)
-INPUT_GOAL=20
-inputs.append(INPUT_GOAL)
-INPUT_PENALTY=23
-inputs.append(INPUT_PENALTY)
-INPUT_POWERPLAY=16
-inputs.append(INPUT_POWERPLAY)
-INPUT_USANTHEM=7
-inputs.append(INPUT_USANTHEM)
-INPUT_CDNANTHEM=8
-inputs.append(INPUT_CDNANTHEM)
-INPUT_STOP=24
-inputs.append(INPUT_STOP)
-GPIO.setup(inputs, GPIO.IN)
-
-# Setup output channels
-OUTPUT_WARMUP=27
-outputs.append(OUTPUT_WARMUP)
-OUTPUT_BTW=26
-outputs.append(OUTPUT_BTW)
-OUTPUT_INTERMISSION=22
-outputs.append(OUTPUT_INTERMISSION)
-OUTPUT_GOAL=17
-outputs.append(OUTPUT_GOAL)
-OUTPUT_PENALTY=19
-outputs.append(OUTPUT_PENALTY)
-OUTPUT_POWERPLAY=6
-outputs.append(OUTPUT_POWERPLAY)
-OUTPUT_USANTHEM=5
-outputs.append(OUTPUT_USANTHEM)
-OUTPUT_CDNANTHEM=4
-outputs.append(OUTPUT_CDNANTHEM)
-OUTPUT_STOP=13
-outputs.append(OUTPUT_STOP)
-GPIO.setup(outputs, GPIO.OUT)
+# Setup LEDS
+LED_WARMUP_PIN = 27
+LED_BTW_PIN = 26
+LED_INTERMISSION_PIN = 22
+LED_GOAL_PIN = 17
+LED_PENALTY_PIN = 19
+LED_POWERPLAY_PIN = 6
+LED_USANTHEM_PIN = 5
+LED_CDNANTHEM_PIN = 4
+LED_STOP_PIN = 13
+leds = LEDBoard(
+    warmup = LED_WARMUP_PIN,
+    btw = LED_BTW_PIN,
+    intermission = LED_INTERMISSION_PIN,
+    goal = LED_GOAL_PIN,
+    penalty = LED_PENALTY_PIN,
+    powerplay = LED_POWERPLAY_PIN,
+    usanthem = LED_USANTHEM_PIN,
+    cdnanthem = LED_CDNANTHEM_PIN,
+    stop = LED_STOP_PIN,
+    _order=('warmup','btw','intermission','goal','penalty','powerplay','usanthem','cdnanthem','stop')
+)
 
 
 #
@@ -118,17 +117,29 @@ list_events = list_player.event_manager()
 #
 
 #
+# cycle_lights_and_on
+# Turns all lights off and then on in a flowing sequence
+#
+def cycle_lights_and_on():
+    leds.off()
+    for led in leds:
+        led.on()
+        sleep(0.05)
+    leds.stop.off()
+
+
+#
 # change_lights_after_input
 # Handle button light changes after a button is pushed
 #
-def change_lights_after_input(p_output):
+def change_lights_after_input(p_led):
     # Turn all button lights off
-    GPIO.output(outputs, GPIO.HIGH)
+    leds.off()
     sleep(0.2)
 
     # Turn on the STOP light and button that was pressed
-    GPIO.output(OUTPUT_STOP, GPIO.LOW)
-    GPIO.output(p_output, GPIO.LOW)
+    leds.stop.on()
+    p_led.on()
 
 #
 # pick_random_song
@@ -159,9 +170,9 @@ def play_song(p_song):
 #
 # GOAL
 #
-def play_goal(channel):
+def play_goal():
     print("GOAL")
-    change_lights_after_input(OUTPUT_GOAL)
+    change_lights_after_input(leds.goal)
     new_song = ""
     while True:
         new_song = pick_random_song(GOAL_MP3_DIR)
@@ -169,7 +180,7 @@ def play_goal(channel):
             print("Song %s has already been played, skipping." % new_song)
         else:
             goal_played_songs.append(new_song)
-            break;
+            break
 
     # Keep list at GOAL_REPEAT_THRESHOLD
     if len(goal_played_songs) > GOAL_REPEAT_THRESHOLD:
@@ -180,33 +191,33 @@ def play_goal(channel):
 #
 # WARM-UP
 #
-def play_warmup(channel):
+def play_warmup():
     print("WARMUP")
-    change_lights_after_input(OUTPUT_WARMUP)
+    change_lights_after_input(leds.warmup)
     play_song(pick_random_song(WARMUP_MP3_DIR))
 
 #
 # US ANTHEM
 #
-def play_usanthem(channel):
+def play_usanthem():
     print("USANTHEM")
-    change_lights_after_input(OUTPUT_USANTHEM)
+    change_lights_after_input(leds.usanthem)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
 
 #
 # CDN ANTHEM
 #
-def play_cdnanthem(channel):
+def play_cdnanthem():
     print("CDNANTHEM")
-    change_lights_after_input(OUTPUT_CDNANTHEM)
+    change_lights_after_input(leds.cdnanthem)
     play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
 #
 # PENALTY
 #
-def play_penalty(channel):
+def play_penalty():
     print("PENALTY")
-    change_lights_after_input(OUTPUT_PENALTY)
+    change_lights_after_input(leds.penalty)
     new_song = ""
     while True:
         new_song = pick_random_song(PENALTY_MP3_DIR)
@@ -214,7 +225,7 @@ def play_penalty(channel):
             print("Song %s has already been played, skipping." % new_song)
         else:
             penalty_played_songs.append(new_song)
-            break;
+            break
 
     # Keep list at PENALTY_REPEAT_THRESHOLD
     if len(penalty_played_songs) > PENALTY_REPEAT_THRESHOLD:
@@ -225,9 +236,9 @@ def play_penalty(channel):
 #
 # POWERPLAY
 #
-def play_powerplay(channel):
+def play_powerplay():
     print("POWERPLAY")
-    change_lights_after_input(OUTPUT_POWERPLAY)
+    change_lights_after_input(leds.powerplay)
     new_song = ""
     while True:
         new_song = pick_random_song(POWERPLAY_MP3_DIR)
@@ -235,7 +246,7 @@ def play_powerplay(channel):
             print("Song %s has already been played, skipping." % new_song)
         else:
             powerplay_played_songs.append(new_song)
-            break;
+            break
 
     # Keep list at POWERPLAY_REPEAT_THRESHOLD
     if len(powerplay_played_songs) > POWERPLAY_REPEAT_THRESHOLD:
@@ -246,9 +257,9 @@ def play_powerplay(channel):
 #
 # INTERMISSION
 #
-def play_intermission(channel):
+def play_intermission():
     print("INTERMISSION")
-    change_lights_after_input(OUTPUT_INTERMISSION)
+    change_lights_after_input(leds.intermission)
 
     # If we queue N songs but only play P, we should remove the last N-P songs from the played list 
     global intermission_num_played
@@ -279,7 +290,7 @@ def play_intermission(channel):
             intermission_playlist.add_media(instance.media_new(new_song))
 
         if intermission_playlist.count() >= INTERMISSION_REPEAT_THRESHOLD:
-            break;
+            break
 
     list_player.set_media_list(intermission_playlist)
     list_player.play()
@@ -288,9 +299,9 @@ def play_intermission(channel):
 #
 # BTW
 #
-def play_btw(channel):
+def play_btw():
     print("BTW")
-    change_lights_after_input(OUTPUT_BTW)
+    change_lights_after_input(leds.btw)
     new_song = ""
     while True:
         new_song = pick_random_song(BTW_MP3_DIR)
@@ -298,7 +309,7 @@ def play_btw(channel):
             print("Song %s has already been played, skipping." % new_song)
         else:
             btw_played_songs.append(new_song)
-            break;
+            break
 
     # Keep list at BTW_REPEAT_THRESHOLD
     if len(btw_played_songs) > BTW_REPEAT_THRESHOLD:
@@ -309,7 +320,7 @@ def play_btw(channel):
 #
 # STOP
 #
-def stop_playback(channel):
+def stop_playback():
     print("STOP")
     sleep(0.3)
     if player.is_playing():
@@ -318,24 +329,19 @@ def stop_playback(channel):
     if list_player.is_playing():
         print("Stopping list player")
         list_player.stop()
-    GPIO.output(outputs, GPIO.HIGH)
     print("Music Stopped")
-    for output in outputs:
-        # GPIO.LOW turns the button lights on
-        GPIO.output(output, GPIO.LOW)
-        sleep(0.05)
-    GPIO.output(OUTPUT_STOP, GPIO.HIGH)
+    cycle_lights_and_on()
 
 # Define event detections and their callbacks
-GPIO.add_event_detect(INPUT_GOAL, GPIO.RISING, callback=play_goal, bouncetime=1000)
-GPIO.add_event_detect(INPUT_WARMUP, GPIO.RISING, callback=play_warmup, bouncetime=1000)
-GPIO.add_event_detect(INPUT_USANTHEM, GPIO.RISING, callback=play_usanthem, bouncetime=1000)
-GPIO.add_event_detect(INPUT_CDNANTHEM, GPIO.RISING, callback=play_cdnanthem, bouncetime=1000)
-GPIO.add_event_detect(INPUT_PENALTY, GPIO.RISING, callback=play_penalty, bouncetime=1000)
-GPIO.add_event_detect(INPUT_POWERPLAY, GPIO.RISING, callback=play_powerplay, bouncetime=1000)
-GPIO.add_event_detect(INPUT_INTERMISSION, GPIO.RISING, callback=play_intermission, bouncetime=1000)
-GPIO.add_event_detect(INPUT_BTW, GPIO.RISING, callback=play_btw, bouncetime=1000)
-GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetime=1000)
+buttons.goal.when_pressed = play_goal
+buttons.warmup.when_pressed = play_warmup
+buttons.usanthem.when_pressed = play_usanthem
+buttons.cdnanthem.when_pressed = play_cdnanthem
+buttons.penalty.when_pressed = play_penalty
+buttons.powerplay.when_pressed = play_powerplay
+buttons.intermission.when_pressed = play_intermission
+buttons.btw.when_pressed = play_btw
+buttons.stop.when_pressed = stop_playback
 
 #
 # Event Handlers
@@ -344,40 +350,24 @@ GPIO.add_event_detect(INPUT_STOP, GPIO.RISING, callback=stop_playback, bouncetim
 # Sends the STOP signal when a song has finished playing to completion
 def song_finished(event):
     print("Song finished, stopping playback")
-    stop_playback(INPUT_STOP)
+    stop_playback()
 
 # Advances to the next song for intermission lists
 def intermission_item_played(event):
     global intermission_num_played
     intermission_num_played += 1
     print("Items Played: %d" % intermission_num_played)
-    #sleep(1)
 
 player_events.event_attach(vlc.EventType.MediaPlayerEndReached, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerPlayed, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
 
-
 # Flicker the lights
 print("Light 'em up.")
-for output in outputs:
-    # GPIO.HIGH turns the button lights off
-    GPIO.output(output, GPIO.HIGH)
-    sleep(0.1)
-for output in outputs:
-    # GPIO.LOW turns the button lights on
-    GPIO.output(output, GPIO.LOW)
-    sleep(0.1)
-GPIO.output(OUTPUT_STOP, GPIO.HIGH)
+cycle_lights_and_on()
 
 print("***********************************")
 print("HockeyBox ready, waiting for input.")
 print("***********************************")
-# Begin main loop, polling for input
-while True:
-    # Event detection should be running during this loop
-    sleep(0.02)
-    # Wonder if we should put a wait_for_edge on INPUT_STOP in here?
-
-# This will likely never be called, but good practice
-GPIO.cleanup()
+# Pause so event handlers can do the rest
+pause()
