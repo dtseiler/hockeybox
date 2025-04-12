@@ -13,9 +13,11 @@ from hockeybox_pins import *
 from gpiozero import ButtonBoard, LEDBoard, pi_info
 from time import sleep
 import os, random, vlc
-from signal import pause
+from signal import pause, signal, SIGTERM, SIGHUP, SIGINT
 from collections import deque
 from pkg_resources import require
+from threading import Thread, Event
+from rpi_lcd import LCD
 
 pi = pi_info()
 
@@ -27,6 +29,19 @@ print("--------------------------------------------")
 print("Raspberry Pi Model " + pi.model)
 print("gpiozero " + require('gpiozero')[0].version)
 print("--------------------------------------------")
+
+#
+# LCD Setup
+#
+lcd_width = 16
+lcd_rows = 2
+lcd_backlight_enabled = True
+lcd = LCD(0x27, 1, lcd_width, lcd_rows, lcd_backlight_enabled)
+lcd_event = ""
+lcd_song = ""
+lcd.text("HockeyBox", 1, 'center')
+lcd.text(HOCKEYBOX_VERSION, 2, 'center')
+lcd_clear_event = Event() #threading.Event()
 
 # Set thresholds for songs played before a song can be re-played
 BTW_REPEAT_THRESHOLD = 50
@@ -99,6 +114,51 @@ list_events = list_player.event_manager()
 # Function Definitions
 #
 
+def safe_exit(signum, frame):
+    stop_playback()
+    lcd.clear()
+    exit(1)
+signal(SIGTERM, safe_exit)
+signal(SIGHUP, safe_exit)
+signal(SIGINT, safe_exit)
+
+#
+# lcd_display
+# Displays event and song title on 1602 (16 x 2) LCD display
+#
+def lcd_display():
+    global lcd_event, lcd_song, lcd_clear_event
+
+    this_song = lcd_song
+    #print("Entering lcd_display() thread. Playing " + this_song)
+
+    lcd.backlight(True)
+    lcd.clear()
+    lcd.text(lcd_event, 1, 'center')
+    while not lcd_clear_event.is_set():
+        print(lcd_event + " song playing: " + lcd_song)
+        if len(lcd_song) < lcd_width:
+            lcd.text(lcd_song, 2)
+        else:
+            lcd.text(lcd_song[:lcd_width], 2)
+            if not lcd_clear_event.is_set():
+                sleep(0.5)
+
+            for i in range(len(lcd_song) - lcd_width + 1):
+                if lcd_clear_event.is_set():
+                    break
+                else:
+                    sleep(0.25)
+                lcd_song_display = lcd_song[i:i+lcd_width]
+                lcd.text(lcd_song_display, 2)
+
+        if not lcd_clear_event.is_set():
+            sleep(0.5)
+
+    lcd.clear()
+    #print("Stopped playing " + this_song + ". Exiting lcd_display() thread")
+
+
 #
 # stop_music_player
 #  Checks both players and stops both if necessary
@@ -156,6 +216,10 @@ def pick_random_song(p_mp3_dir):
 # Play specified song (mp3 file path) through VLC MediaPlayer instance
 #
 def play_song(p_song):
+    # Set lcd_song for display
+    global lcd_song
+    lcd_song = os.path.basename(p_song)
+
     # Stop playing if anything is currently playing
     stop_music_player()
 
@@ -167,7 +231,10 @@ def play_song(p_song):
 # GOAL
 #
 def play_goal():
-    print("GOAL")
+    global lcd_event
+    lcd_event = "GOAL"
+    print(lcd_event)
+
     change_lights_after_input(leds.goal)
     new_song = ""
     while True:
@@ -188,7 +255,10 @@ def play_goal():
 # WARM-UP
 #
 def play_warmup():
-    print("WARMUP")
+    global lcd_event
+    lcd_event = "WARMUP"
+    print(lcd_event)
+
     change_lights_after_input(leds.warmup)
     play_song(pick_random_song(WARMUP_MP3_DIR))
 
@@ -196,7 +266,10 @@ def play_warmup():
 # US ANTHEM
 #
 def play_usanthem():
-    print("USANTHEM")
+    global lcd_event
+    lcd_event = "US Anthem"
+    print(lcd_event)
+
     change_lights_after_input(leds.usanthem)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
 
@@ -204,7 +277,10 @@ def play_usanthem():
 # CDN ANTHEM
 #
 def play_cdnanthem():
-    print("CDNANTHEM")
+    global lcd_event
+    lcd_event = "CDN Anthem"
+    print(lcd_event)
+
     change_lights_after_input(leds.cdnanthem)
     play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
@@ -212,7 +288,10 @@ def play_cdnanthem():
 # PENALTY
 #
 def play_penalty():
-    print("PENALTY")
+    global lcd_event
+    lcd_event = "PENALTY"
+    print(lcd_event)
+
     change_lights_after_input(leds.penalty)
     new_song = ""
     while True:
@@ -233,7 +312,10 @@ def play_penalty():
 # POWERPLAY
 #
 def play_powerplay():
-    print("POWERPLAY")
+    global lcd_event
+    lcd_event = "POWERPLAY"
+    print(lcd_event)
+
     change_lights_after_input(leds.powerplay)
     new_song = ""
     while True:
@@ -254,7 +336,10 @@ def play_powerplay():
 # INTERMISSION
 #
 def play_intermission():
-    print("INTERMISSION")
+    global lcd_event
+    lcd_event = "INTERMISSION"
+    print(lcd_event)
+
     change_lights_after_input(leds.intermission)
 
     # Stop playing if anything is currently playing
@@ -299,7 +384,10 @@ def play_intermission():
 # BTW
 #
 def play_btw():
-    print("BTW")
+    global lcd_event
+    lcd_event = "BTW"
+    print(lcd_event)
+
     change_lights_after_input(leds.btw)
     new_song = ""
     while True:
@@ -320,12 +408,20 @@ def play_btw():
 # STOP
 #
 def stop_playback():
-    print("STOP")
-
     # Stop playing if anything is currently playing
     stop_music_player()
 
+    global lcd_event, lcd_song
+    lcd_event = "STOP"
+    lcd_song = "Music Stopped"
+    print(lcd_event)
+
     cycle_lights_and_on()
+
+    lcd.text(lcd_event, 1, 'center')
+    lcd.text(lcd_song, 2,)
+
+
 
 # Define event detections and their callbacks
 buttons.goal.when_pressed = play_goal
@@ -353,6 +449,47 @@ def intermission_item_played(event):
     intermission_num_played += 1
     print("Items Played: %d" % intermission_num_played)
 
+    global lcd_clear_event, lcd_song
+    lcd_song = list_player.get_media_player().get_media().get_meta(0)
+
+    lcd_clear_event.clear()
+    lcd_thread = Thread(target=lcd_display, daemon=True)
+    lcd_thread.start()
+
+# Update lcd display with what's currently playing
+def lcd_update(event):
+    global lcd_clear_event, lcd_song
+
+    print("Update LCD")
+    lcd_song = player.get_media().get_meta(0)
+
+    lcd_clear_event.clear()
+    lcd_thread = Thread(target=lcd_display, daemon=True)
+    lcd_thread.start()
+
+# Turn LCD off if nothing has been playing for a while
+def lcd_display_off():
+    # if the backlight is on but clear event is set,
+    # wait 5 seconds, if clear event is still set,
+    # turn backlight off
+    #
+    # XXX:  should probably check if it remained set the whole time
+    #       vs could have been started and stopped, which should
+    #       reset our timer
+    while True:
+        if lcd.backlight_status:
+            print("LCD backlight is ON")
+            if lcd_clear_event.is_set():
+                print("LCD clear event is SET")
+                sleep(5)
+                if lcd_clear_event.is_set():
+                    print("LCD clear event is STILL SET, turning backlight OFF")
+                    lcd.backlight(False)
+        sleep(5)
+lcd_off_thread = Thread(target=lcd_display_off, daemon=True)
+lcd_off_thread.start()
+
+player_events.event_attach(vlc.EventType.MediaPlayerMediaChanged, lcd_update)
 player_events.event_attach(vlc.EventType.MediaPlayerEndReached, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerPlayed, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
@@ -364,5 +501,10 @@ cycle_lights_and_on()
 print("***********************************")
 print("HockeyBox ready, waiting for input.")
 print("***********************************")
+
+lcd.text("HockeyBox", 1, 'center')
+lcd.text("Ready", 2, 'center')
+lcd_clear_event.set()
+
 # Pause so event handlers can do the rest
 pause()
