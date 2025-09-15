@@ -7,7 +7,7 @@
 # Use 4-space tabs for indentation
 # vim :set ts=4 sw=4 sts=4 et:
 
-HOCKEYBOX_VERSION = "202504.1"
+HOCKEYBOX_VERSION = "202509.1"
 
 from hockeybox_pins import *
 from gpiozero import ButtonBoard, LEDBoard, pi_info
@@ -111,6 +111,7 @@ list_events = list_player.event_manager()
 
 def safe_exit(signum, frame):
     stop_playback()
+    lcd.backlight(False)
     lcd.clear()
     exit(1)
 signal(SIGTERM, safe_exit)
@@ -159,6 +160,9 @@ def lcd_display():
 #  Checks both players and stops both if necessary
 #
 def stop_music_player():
+    global lcd_clear_event
+    lcd_clear_event.set()
+
     if player.is_playing():
         print("Stopping player")
         player.stop()
