@@ -38,13 +38,13 @@ POWERPLAY_REPEAT_THRESHOLD = 4
 # mp3 locations
 BASE_MP3_DIR = "/media/hockeybox"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
-WARMUP_MP3_DIR = BASE_MP3_DIR + "/warmup"
+#WARMUP_MP3_DIR = BASE_MP3_DIR + "/warmup"
 BTW_MP3_DIR = BASE_MP3_DIR + "/btw"
 INTERMISSION_MP3_DIR = BASE_MP3_DIR + "/intermission"
 PENALTY_MP3_DIR = BASE_MP3_DIR + "/penalty"
 POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
-CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
+#CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
 # Queues to track played songs
 btw_played_songs = deque([])
@@ -56,28 +56,29 @@ powerplay_played_songs = deque([])
 
 # Setup buttons
 buttons = ButtonBoard(
-    warmup = BUTTON_WARMUP_PIN,
+    freebird = BUTTON_FREEBIRD_PIN,
+    #warmup = BUTTON_WARMUP_PIN,
     btw = BUTTON_BTW_PIN,
     intermission = BUTTON_INTERMISSION_PIN,
     goal = BUTTON_GOAL_PIN,
     penalty = BUTTON_PENALTY_PIN,
     powerplay = BUTTON_POWERPLAY_PIN,
     usanthem = BUTTON_USANTHEM_PIN,
-    cdnanthem = BUTTON_CDNANTHEM_PIN,
+    #cdnanthem = BUTTON_CDNANTHEM_PIN,
     stop = BUTTON_STOP_PIN,
     bounce_time = 0.05
 )
 
 # Setup LEDS
 leds = LEDBoard(
-    warmup = LED_WARMUP_PIN,
+    #warmup = LED_WARMUP_PIN,
     btw = LED_BTW_PIN,
     intermission = LED_INTERMISSION_PIN,
     goal = LED_GOAL_PIN,
     penalty = LED_PENALTY_PIN,
     powerplay = LED_POWERPLAY_PIN,
     usanthem = LED_USANTHEM_PIN,
-    cdnanthem = LED_CDNANTHEM_PIN,
+    #cdnanthem = LED_CDNANTHEM_PIN,
     stop = LED_STOP_PIN,
     _order=('warmup','btw','intermission','goal','penalty','powerplay','usanthem','cdnanthem','stop')
 )
@@ -185,28 +186,12 @@ def play_goal():
     play_song(new_song)
 
 #
-# WARM-UP
-#
-def play_warmup():
-    print("WARMUP")
-    change_lights_after_input(leds.warmup)
-    play_song(pick_random_song(WARMUP_MP3_DIR))
-
-#
 # US ANTHEM
 #
 def play_usanthem():
     print("USANTHEM")
     change_lights_after_input(leds.usanthem)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
-
-#
-# CDN ANTHEM
-#
-def play_cdnanthem():
-    print("CDNANTHEM")
-    change_lights_after_input(leds.cdnanthem)
-    play_song(pick_random_song(CDNANTHEM_MP3_DIR))
 
 #
 # PENALTY
@@ -317,6 +302,14 @@ def play_btw():
     play_song(new_song)
 
 #
+# FREEBIRD
+#
+def freebird_time():
+    change_lights_after_input(leds.btw)
+    freebird_song = "/media/hockeybox/freebird/Free Bird - Rocker Cut.mp3"
+    play_song(freebird_song)
+
+#
 # STOP
 #
 def stop_playback():
@@ -329,13 +322,12 @@ def stop_playback():
 
 # Define event detections and their callbacks
 buttons.goal.when_pressed = play_goal
-buttons.warmup.when_pressed = play_warmup
 buttons.usanthem.when_pressed = play_usanthem
-buttons.cdnanthem.when_pressed = play_cdnanthem
 buttons.penalty.when_pressed = play_penalty
 buttons.powerplay.when_pressed = play_powerplay
 buttons.intermission.when_pressed = play_intermission
 buttons.btw.when_pressed = play_btw
+buttons.freebird.when_pressed = freebird_time
 buttons.stop.when_pressed = stop_playback
 
 #
