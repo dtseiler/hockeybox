@@ -57,30 +57,26 @@ powerplay_played_songs = deque([])
 # Setup buttons
 buttons = ButtonBoard(
     freebird = BUTTON_FREEBIRD_PIN,
-    #warmup = BUTTON_WARMUP_PIN,
     btw = BUTTON_BTW_PIN,
     intermission = BUTTON_INTERMISSION_PIN,
     goal = BUTTON_GOAL_PIN,
     penalty = BUTTON_PENALTY_PIN,
     powerplay = BUTTON_POWERPLAY_PIN,
     usanthem = BUTTON_USANTHEM_PIN,
-    #cdnanthem = BUTTON_CDNANTHEM_PIN,
     stop = BUTTON_STOP_PIN,
     bounce_time = 0.05
 )
 
 # Setup LEDS
 leds = LEDBoard(
-    #warmup = LED_WARMUP_PIN,
     btw = LED_BTW_PIN,
     intermission = LED_INTERMISSION_PIN,
     goal = LED_GOAL_PIN,
     penalty = LED_PENALTY_PIN,
     powerplay = LED_POWERPLAY_PIN,
     usanthem = LED_USANTHEM_PIN,
-    #cdnanthem = LED_CDNANTHEM_PIN,
     stop = LED_STOP_PIN,
-    _order=('warmup','btw','intermission','goal','penalty','powerplay','usanthem','cdnanthem','stop')
+    _order=('btw','intermission','goal','penalty','powerplay','usanthem','stop')
 )
 
 
