@@ -162,6 +162,7 @@ def lcd_display():
 def stop_music_player():
     global lcd_clear_event
     lcd_clear_event.set()
+    sleep(0.5)
 
     if player.is_playing():
         print("Stopping player")
