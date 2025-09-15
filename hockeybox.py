@@ -386,6 +386,10 @@ def play_btw():
 # FREEBIRD
 #
 def freebird_time():
+    global lcd_event
+    lcd_event = "FREEBIRD TIME"
+    print(lcd_event)
+
     change_lights_after_input(leds.btw)
     freebird_song = "/media/hockeybox/freebird/Free Bird - Rocker Cut.mp3"
     play_song(freebird_song)
