@@ -134,7 +134,7 @@ def lcd_display():
     print(lcd_event + " song playing: " + lcd_song)
     while not lcd_clear_event.is_set():
         if len(lcd_song) < lcd_width:
-            lcd.text(lcd_song, 2)
+            lcd.text(lcd_song, 2, 'center')
         else:
             lcd.text(lcd_song[:lcd_width], 2)
             if not lcd_clear_event.is_set():
@@ -350,7 +350,7 @@ def play_intermission():
         else:
             print("Adding song %s to intermission play list." % new_song)
             intermission_played_songs.append(new_song)
-            media = instance.media_new(p_song)
+            media = instance.media_new(new_song)
             media.parse()
             intermission_playlist.add_media(media)
 
