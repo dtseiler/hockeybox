@@ -216,10 +216,6 @@ def pick_random_song(p_mp3_dir):
 # Play specified song (mp3 file path) through VLC MediaPlayer instance
 #
 def play_song(p_song):
-    # Set lcd_song for display
-    global lcd_song
-    lcd_song = os.path.basename(p_song)
-
     # Stop playing if anything is currently playing
     stop_music_player()
 
@@ -442,7 +438,9 @@ def intermission_item_played(event):
     lcd_clear_event.set()
     sleep(0.5)
 
-    lcd_song = list_player.get_media_player().get_media().get_meta(0)
+    title = list_player.get_media_player().get_media().get_meta(vlc.Meta.Title)
+    artist = list_player.get_media_player().get_media().get_meta(vlc.Meta.Artist)
+    lcd_song = artist + " - " + title
 
     lcd_clear_event.clear()
     lcd_thread = Thread(target=lcd_display, daemon=True)
@@ -453,7 +451,9 @@ def lcd_update(event):
     global lcd_clear_event, lcd_song
 
     print("Update LCD")
-    lcd_song = player.get_media().get_meta(0)
+    title = player.get_media().get_meta(vlc.Meta.Title)
+    artist = player.get_media().get_meta(vlc.Meta.Artist)
+    lcd_song = artist + " - " + title
 
     lcd_clear_event.clear()
     lcd_thread = Thread(target=lcd_display, daemon=True)
