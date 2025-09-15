@@ -131,8 +131,8 @@ def lcd_display():
     lcd.backlight(True)
     lcd.clear()
     lcd.text(lcd_event, 1, 'center')
+    print(lcd_event + " song playing: " + lcd_song)
     while not lcd_clear_event.is_set():
-        print(lcd_event + " song playing: " + lcd_song)
         if len(lcd_song) < lcd_width:
             lcd.text(lcd_song, 2)
         else:
@@ -462,9 +462,9 @@ def lcd_display_off():
     #       reset our timer
     while True:
         if lcd.backlight_status:
-            print("LCD backlight is ON")
+            #print("LCD backlight is ON")
             if lcd_clear_event.is_set():
-                print("LCD clear event is SET")
+                print("LCD clear event is SET, checking again in 5 seconds")
                 sleep(5)
                 if lcd_clear_event.is_set():
                     print("LCD clear event is STILL SET, turning backlight OFF")
