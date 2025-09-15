@@ -38,13 +38,11 @@ POWERPLAY_REPEAT_THRESHOLD = 4
 # mp3 locations
 BASE_MP3_DIR = "/media/hockeybox"
 GOAL_MP3_DIR = BASE_MP3_DIR + "/goal"
-#WARMUP_MP3_DIR = BASE_MP3_DIR + "/warmup"
 BTW_MP3_DIR = BASE_MP3_DIR + "/btw"
 INTERMISSION_MP3_DIR = BASE_MP3_DIR + "/intermission"
 PENALTY_MP3_DIR = BASE_MP3_DIR + "/penalty"
 POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
-#CDNANTHEM_MP3_DIR = BASE_MP3_DIR + "/cdnanthem"
 
 # Queues to track played songs
 btw_played_songs = deque([])
