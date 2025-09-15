@@ -223,7 +223,9 @@ def play_song(p_song):
     stop_music_player()
 
     print("Playing %s" % p_song)
-    player.set_media(instance.media_new(p_song))
+    media = instance.media_new(p_song)
+    media.parse()
+    player.set_media(media)
     player.play()
 
 #
@@ -348,7 +350,9 @@ def play_intermission():
         else:
             print("Adding song %s to intermission play list." % new_song)
             intermission_played_songs.append(new_song)
-            intermission_playlist.add_media(instance.media_new(new_song))
+            media = instance.media_new(p_song)
+            media.parse()
+            intermission_playlist.add_media(media)
 
         if intermission_playlist.count() >= INTERMISSION_REPEAT_THRESHOLD:
             break
@@ -434,6 +438,9 @@ def intermission_item_played(event):
     print("Items Played: %d" % intermission_num_played)
 
     global lcd_clear_event, lcd_song
+    lcd_clear_event.set()
+    sleep(0.5)
+
     lcd_song = list_player.get_media_player().get_media().get_meta(0)
 
     lcd_clear_event.clear()
