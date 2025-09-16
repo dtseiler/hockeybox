@@ -9,13 +9,11 @@ Alternative command script for The HockeyBox
 USB drive must be mounted at `/media/hockeybox` with the following subdirectories:
 
 * btw
-* cdnanthem
 * goal
 * intermission
 * penalty
 * powerplay
 * usanthem
-* warmup
 
 There is no necessary naming format for the mp3 files, other than they must have the `.mp3` filename extension and not begin with a dot (`.`).
 
