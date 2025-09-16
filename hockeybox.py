@@ -7,15 +7,17 @@
 # Use 4-space tabs for indentation
 # vim :set ts=4 sw=4 sts=4 et:
 
-HOCKEYBOX_VERSION = "202504.1"
+HOCKEYBOX_VERSION = "202509.1"
+HOCKEYBOX_LCD_ENABLED = True
 
 from hockeybox_pins import *
 from gpiozero import ButtonBoard, LEDBoard, pi_info
 from time import sleep
 import os, random, vlc
-from signal import pause
+from signal import pause, signal, SIGTERM, SIGHUP, SIGINT
 from collections import deque
 from pkg_resources import require
+from threading import Thread, Event
 
 pi = pi_info()
 
@@ -27,6 +29,21 @@ print("--------------------------------------------")
 print("Raspberry Pi Model " + pi.model)
 print("gpiozero " + require('gpiozero')[0].version)
 print("--------------------------------------------")
+
+#
+# LCD Setup
+#
+lcd_event = ""
+lcd_song = ""
+if HOCKEYBOX_LCD_ENABLED:
+    from rpi_lcd import LCD
+    lcd_width = 16
+    lcd_rows = 2
+    lcd_backlight_enabled = True
+    lcd = LCD(0x27, 1, lcd_width, lcd_rows, lcd_backlight_enabled)
+    lcd.text("HockeyBox", 1, 'center')
+    lcd.text(HOCKEYBOX_VERSION, 2, 'center')
+    lcd_clear_event = Event() #threading.Event()
 
 # Set thresholds for songs played before a song can be re-played
 BTW_REPEAT_THRESHOLD = 50
@@ -43,6 +60,7 @@ INTERMISSION_MP3_DIR = BASE_MP3_DIR + "/intermission"
 PENALTY_MP3_DIR = BASE_MP3_DIR + "/penalty"
 POWERPLAY_MP3_DIR = BASE_MP3_DIR + "/powerplay"
 USANTHEM_MP3_DIR = BASE_MP3_DIR + "/usanthem"
+FREEBIRD_MP3_DIR = BASE_MP3_DIR + "/freebird"
 
 # Queues to track played songs
 btw_played_songs = deque([])
@@ -94,11 +112,66 @@ list_events = list_player.event_manager()
 # Function Definitions
 #
 
+def safe_exit(signum, frame):
+    stop_playback()
+    if HOCKEYBOX_LCD_ENABLED:
+        lcd.backlight(False)
+        lcd.clear()
+    exit(1)
+signal(SIGTERM, safe_exit)
+signal(SIGHUP, safe_exit)
+signal(SIGINT, safe_exit)
+
+#
+# lcd_display
+# Displays event and song title on 1602 (16 x 2) LCD display
+#
+def lcd_display():
+    if not HOCKEYBOX_LCD_ENABLED:
+        return
+
+    global lcd_event, lcd_song, lcd_clear_event
+
+    this_song = lcd_song
+    #print("Entering lcd_display() thread. Playing " + this_song)
+
+    lcd.backlight(True)
+    lcd.clear()
+    lcd.text(lcd_event, 1, 'center')
+    print("LCD: " + lcd_event + ": " + lcd_song)
+    while not lcd_clear_event.is_set():
+        if len(lcd_song) < lcd_width:
+            lcd.text(lcd_song, 2, 'center')
+        else:
+            lcd.text(lcd_song[:lcd_width], 2)
+            if not lcd_clear_event.is_set():
+                sleep(0.5)
+
+            for i in range(len(lcd_song) - lcd_width + 1):
+                if lcd_clear_event.is_set():
+                    break
+                else:
+                    sleep(0.25)
+                lcd_song_display = lcd_song[i:i+lcd_width]
+                lcd.text(lcd_song_display, 2)
+
+        if not lcd_clear_event.is_set():
+            sleep(0.5)
+
+    lcd.clear()
+    #print("Stopped playing " + this_song + ". Exiting lcd_display() thread")
+
+
 #
 # stop_music_player
 #  Checks both players and stops both if necessary
 #
 def stop_music_player():
+    if HOCKEYBOX_LCD_ENABLED:
+        global lcd_clear_event
+        lcd_clear_event.set()
+        sleep(0.25)
+
     if player.is_playing():
         print("Stopping player")
         player.stop()
@@ -126,7 +199,7 @@ def cycle_lights_and_on():
 def change_lights_after_input(p_led):
     # Turn all button lights off
     leds.off()
-    sleep(0.2)
+    sleep(0.1)
 
     # Turn on the STOP light and button that was pressed
     leds.stop.on()
@@ -154,15 +227,25 @@ def play_song(p_song):
     # Stop playing if anything is currently playing
     stop_music_player()
 
-    print("Playing %s" % p_song)
-    player.set_media(instance.media_new(p_song))
+    print("play_song: File %s" % p_song)
+    media = instance.media_new(p_song)
+    media.parse_with_options(0,250)
+    sleep(0.25)
+    title = media.get_meta(vlc.Meta.Title)
+    artist = media.get_meta(vlc.Meta.Artist)
+    print("Playing: %s - %s" % (artist, title))
+
+    player.set_media(media)
     player.play()
 
 #
 # GOAL
 #
 def play_goal():
-    print("GOAL")
+    global lcd_event
+    lcd_event = "GOAL"
+    print(lcd_event)
+
     change_lights_after_input(leds.goal)
     new_song = ""
     while True:
@@ -183,7 +266,10 @@ def play_goal():
 # US ANTHEM
 #
 def play_usanthem():
-    print("USANTHEM")
+    global lcd_event
+    lcd_event = "US Anthem"
+    print(lcd_event)
+
     change_lights_after_input(leds.usanthem)
     play_song(pick_random_song(USANTHEM_MP3_DIR))
 
@@ -191,7 +277,10 @@ def play_usanthem():
 # PENALTY
 #
 def play_penalty():
-    print("PENALTY")
+    global lcd_event
+    lcd_event = "PENALTY"
+    print(lcd_event)
+
     change_lights_after_input(leds.penalty)
     new_song = ""
     while True:
@@ -212,7 +301,10 @@ def play_penalty():
 # POWERPLAY
 #
 def play_powerplay():
-    print("POWERPLAY")
+    global lcd_event
+    lcd_event = "POWERPLAY"
+    print(lcd_event)
+
     change_lights_after_input(leds.powerplay)
     new_song = ""
     while True:
@@ -233,7 +325,10 @@ def play_powerplay():
 # INTERMISSION
 #
 def play_intermission():
-    print("INTERMISSION")
+    global lcd_event
+    lcd_event = "INTERMISSION"
+    print(lcd_event)
+
     change_lights_after_input(leds.intermission)
 
     # Stop playing if anything is currently playing
@@ -265,11 +360,14 @@ def play_intermission():
         else:
             print("Adding song %s to intermission play list." % new_song)
             intermission_played_songs.append(new_song)
-            intermission_playlist.add_media(instance.media_new(new_song))
+            media = instance.media_new(new_song)
+            media.parse_with_options(0,250)
+            intermission_playlist.add_media(media)
 
         if intermission_playlist.count() >= INTERMISSION_REPEAT_THRESHOLD:
             break
 
+    sleep(0.25)
     list_player.set_media_list(intermission_playlist)
     list_player.play()
 
@@ -278,7 +376,10 @@ def play_intermission():
 # BTW
 #
 def play_btw():
-    print("BTW")
+    global lcd_event
+    lcd_event = "BTW"
+    print(lcd_event)
+
     change_lights_after_input(leds.btw)
     new_song = ""
     while True:
@@ -299,20 +400,33 @@ def play_btw():
 # FREEBIRD
 #
 def freebird_time():
+    global lcd_event
+    lcd_event = "FREEBIRD TIME"
+    print(lcd_event)
+
     change_lights_after_input(leds.btw)
-    freebird_song = "/media/hockeybox/freebird/Free Bird - Rocker Cut.mp3"
+    freebird_song = FREEBIRD_MP3_DIR + "/Free Bird - Rocker Cut.mp3"
     play_song(freebird_song)
 
 #
 # STOP
 #
 def stop_playback():
-    print("STOP")
-
     # Stop playing if anything is currently playing
     stop_music_player()
 
+    global lcd_event, lcd_song
+    lcd_event = "STOP"
+    lcd_song = "Music Stopped"
+    print(lcd_event)
+
     cycle_lights_and_on()
+
+    if HOCKEYBOX_LCD_ENABLED:
+        lcd.text(lcd_event, 1, 'center')
+        lcd.text(lcd_song, 2,)
+
+
 
 # Define event detections and their callbacks
 buttons.goal.when_pressed = play_goal
@@ -339,6 +453,65 @@ def intermission_item_played(event):
     intermission_num_played += 1
     print("Items Played: %d" % intermission_num_played)
 
+    title = list_player.get_media_player().get_media().get_meta(vlc.Meta.Title)
+    artist = list_player.get_media_player().get_media().get_meta(vlc.Meta.Artist)
+    print("Playing: %s - %s" % (artist, title))
+
+    if HOCKEYBOX_LCD_ENABLED:
+        global lcd_clear_event, lcd_song
+        lcd_clear_event.set()
+        sleep(0.25)
+
+        lcd_song = artist + " - " + title
+
+        lcd_clear_event.clear()
+        lcd_thread = Thread(target=lcd_display, daemon=True)
+        lcd_thread.start()
+
+# Update lcd display with what's currently playing
+def lcd_update(event):
+    if not HOCKEYBOX_LCD_ENABLED:
+        return
+
+    global lcd_clear_event, lcd_song
+
+    print("Update LCD")
+    title = player.get_media().get_meta(vlc.Meta.Title)
+    artist = player.get_media().get_meta(vlc.Meta.Artist)
+    lcd_song = artist + " - " + title
+
+    lcd_clear_event.clear()
+    lcd_thread = Thread(target=lcd_display, daemon=True)
+    lcd_thread.start()
+
+# Turn LCD off if nothing has been playing for a while
+def lcd_display_off():
+    if not HOCKEYBOX_LCD_ENABLED:
+        return
+
+    # if the backlight is on but clear event is set,
+    # wait 5 seconds, if clear event is still set,
+    # turn backlight off
+    #
+    # XXX:  should probably check if it remained set the whole time
+    #       vs could have been started and stopped, which should
+    #       reset our timer
+    while True:
+        if lcd.backlight_status:
+            #print("LCD backlight is ON")
+            if lcd_clear_event.is_set():
+                print("LCD clear event is SET, checking again in 5 seconds")
+                sleep(5)
+                if lcd_clear_event.is_set():
+                    print("LCD clear event is STILL SET, turning backlight OFF")
+                    lcd.backlight(False)
+        sleep(5)
+
+if HOCKEYBOX_LCD_ENABLED:
+    lcd_off_thread = Thread(target=lcd_display_off, daemon=True)
+    lcd_off_thread.start()
+
+player_events.event_attach(vlc.EventType.MediaPlayerMediaChanged, lcd_update)
 player_events.event_attach(vlc.EventType.MediaPlayerEndReached, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerPlayed, song_finished)
 list_events.event_attach(vlc.EventType.MediaListPlayerNextItemSet, intermission_item_played)
@@ -350,5 +523,11 @@ cycle_lights_and_on()
 print("***********************************")
 print("HockeyBox ready, waiting for input.")
 print("***********************************")
+
+if HOCKEYBOX_LCD_ENABLED:
+    lcd.text("HockeyBox", 1, 'center')
+    lcd.text("Ready", 2, 'center')
+    lcd_clear_event.set()
+
 # Pause so event handlers can do the rest
 pause()
