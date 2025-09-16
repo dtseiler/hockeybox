@@ -33,14 +33,14 @@ print("--------------------------------------------")
 #
 # LCD Setup
 #
+lcd_event = ""
+lcd_song = ""
 if HOCKEYBOX_LCD_ENABLED:
     from rpi_lcd import LCD
     lcd_width = 16
     lcd_rows = 2
     lcd_backlight_enabled = True
     lcd = LCD(0x27, 1, lcd_width, lcd_rows, lcd_backlight_enabled)
-    lcd_event = ""
-    lcd_song = ""
     lcd.text("HockeyBox", 1, 'center')
     lcd.text(HOCKEYBOX_VERSION, 2, 'center')
     lcd_clear_event = Event() #threading.Event()
@@ -127,6 +127,9 @@ signal(SIGINT, safe_exit)
 # Displays event and song title on 1602 (16 x 2) LCD display
 #
 def lcd_display():
+    if not HOCKEYBOX_LCD_ENABLED:
+        return
+
     global lcd_event, lcd_song, lcd_clear_event
 
     this_song = lcd_song
@@ -135,7 +138,7 @@ def lcd_display():
     lcd.backlight(True)
     lcd.clear()
     lcd.text(lcd_event, 1, 'center')
-    print(lcd_event + " song playing: " + lcd_song)
+    print("LCD: " + lcd_event + ": " + lcd_song)
     while not lcd_clear_event.is_set():
         if len(lcd_song) < lcd_width:
             lcd.text(lcd_song, 2, 'center')
@@ -224,9 +227,14 @@ def play_song(p_song):
     # Stop playing if anything is currently playing
     stop_music_player()
 
-    print("Playing %s" % p_song)
+    print("play_song: File %s" % p_song)
     media = instance.media_new(p_song)
-    media.parse()
+    media.parse_with_options(0,250)
+    sleep(0.25)
+    title = media.get_meta(vlc.Meta.Title)
+    artist = media.get_meta(vlc.Meta.Artist)
+    print("Playing: %s - %s" % (artist, title))
+
     player.set_media(media)
     player.play()
 
@@ -353,12 +361,13 @@ def play_intermission():
             print("Adding song %s to intermission play list." % new_song)
             intermission_played_songs.append(new_song)
             media = instance.media_new(new_song)
-            media.parse()
+            media.parse_with_options(0,250)
             intermission_playlist.add_media(media)
 
         if intermission_playlist.count() >= INTERMISSION_REPEAT_THRESHOLD:
             break
 
+    sleep(0.25)
     list_player.set_media_list(intermission_playlist)
     list_player.play()
 
@@ -444,13 +453,15 @@ def intermission_item_played(event):
     intermission_num_played += 1
     print("Items Played: %d" % intermission_num_played)
 
+    title = list_player.get_media_player().get_media().get_meta(vlc.Meta.Title)
+    artist = list_player.get_media_player().get_media().get_meta(vlc.Meta.Artist)
+    print("Playing: %s - %s" % (artist, title))
+
     if HOCKEYBOX_LCD_ENABLED:
         global lcd_clear_event, lcd_song
         lcd_clear_event.set()
         sleep(0.5)
 
-        title = list_player.get_media_player().get_media().get_meta(vlc.Meta.Title)
-        artist = list_player.get_media_player().get_media().get_meta(vlc.Meta.Artist)
         lcd_song = artist + " - " + title
 
         lcd_clear_event.clear()
