@@ -170,7 +170,7 @@ def stop_music_player():
     if HOCKEYBOX_LCD_ENABLED:
         global lcd_clear_event
         lcd_clear_event.set()
-        sleep(0.5)
+        sleep(0.25)
 
     if player.is_playing():
         print("Stopping player")
@@ -199,7 +199,7 @@ def cycle_lights_and_on():
 def change_lights_after_input(p_led):
     # Turn all button lights off
     leds.off()
-    sleep(0.2)
+    sleep(0.1)
 
     # Turn on the STOP light and button that was pressed
     leds.stop.on()
@@ -460,7 +460,7 @@ def intermission_item_played(event):
     if HOCKEYBOX_LCD_ENABLED:
         global lcd_clear_event, lcd_song
         lcd_clear_event.set()
-        sleep(0.5)
+        sleep(0.25)
 
         lcd_song = artist + " - " + title
 
