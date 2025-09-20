@@ -6,11 +6,17 @@ Alternative command script for The HockeyBox
 
 ## CHANGELOG
 
-### 202504.1 (XX Apr 2025)
+### 2.0.0 (XX Sep 2025)
 #### hockeybox.py Changes
+* Change to semantic versioning
+* Update README to use systemd instead of /etc/rc.local
 * Replaced RPi.GPIO with gpiozero library.
 * Fixed bug to prevent simultaneous playback of INTERMISSION and any non-INTERMISSION player.
 * Moved GPIO PIN definitions to a file for easier testing on my breadboard.
+* Added i2c LCD screen support
+* Added media metadata parsing support
+* Removed warmup and cdnanthem to match new hardware box (hence HockeyBox 2.0.0)
+* Added the Freebird switch support
 
 ### 202308.1 (20 Aug 2023)
 #### hockeybox.py Changes

@@ -27,8 +27,37 @@ You will need the `vlc` python3 module.
 - If you prefer `pip` you can run `sudo pip install python-vlc`.
 
 ## Use
-1. Edit /etc/rc.local on your HockeyBox and point it to the new hockeybox.py script.
-    - e.g. `/home/foo/hockeybox/hockeybox.py &`
-    - Be sure to add this line just before the `exit 0` line at the end of the file.
-2. Restart HockeyBox, it should run hockeybox.py automatically.
+To have Hockeybox run automatically on startup, we create a systemd service for it.
 
+### Create the file `/etc/systemd/system/hockeybox.service`
+```
+sudo vi /etc/systemd/system/hockeybox.service
+```
+
+### Define the service by writing this to the file (be sure to update the path to the hockeybox.py file)
+```
+[Unit]
+Description=HockeyBox
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /path/to/hockeybox/hockeybox.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Reload systemd and enable the new service
+```
+sudo systemctl daemon-reload
+sudo systemctl enable hockeybox
+```
+
+### Test
+You can start the service as a quick test that it is working properly
+```
+sudo systemctl start hockeybox
+```
+
+### Reboot
+Finally, reboot your device and confirm that the service starts automatically.
