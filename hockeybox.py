@@ -7,7 +7,7 @@
 # Use 4-space tabs for indentation
 # vim :set ts=4 sw=4 sts=4 et:
 
-HOCKEYBOX_VERSION = "202509.1"
+HOCKEYBOX_VERSION = "2.0.0"
 HOCKEYBOX_LCD_ENABLED = True
 
 from hockeybox_pins import *
